@@ -7,7 +7,6 @@ import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
 import { TrendChart, StageDonut, ReasonBar, HBars } from "./Charts";
 import { InsightsPanel } from "./Insights";
-import { RecentFeed } from "./RecentFeed";
 import { AuditTable } from "./AuditTable";
 import { ClusterDrawer } from "./ClusterDrawer";
 import { useFilters } from "@/lib/client/useFilters";
@@ -47,19 +46,7 @@ export function Dashboard() {
 
         <KpiCards kpis={data?.kpis} byStage={data?.byStage} loading={loading && !data} />
 
-        {/* Recent deletions — full-width, directly below the KPI cards */}
-        <section className="grid grid-cols-12 gap-4">
-          <RecentFeed records={data?.recent} loading={loading && !data} onSelect={setSelected} />
-        </section>
-
-        <section className="grid grid-cols-12 gap-4">
-          <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
-          <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
-          <ReasonBar data={data?.byReason ?? []} loading={loading && !data} />
-          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} />
-          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} />
-        </section>
-
+        {/* Consolidated recent deletions + audit log — full width, below KPIs */}
         <section className="grid grid-cols-12 gap-4">
           <AuditTable
             queryString={queryString}
@@ -68,6 +55,14 @@ export function Dashboard() {
             onSelect={setSelected}
             selectedId={selected?.cluster_id}
           />
+        </section>
+
+        <section className="grid grid-cols-12 gap-4">
+          <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
+          <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
+          <ReasonBar data={data?.byReason ?? []} loading={loading && !data} />
+          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} />
+          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} />
         </section>
 
         {/* Insights & Alerts — last section */}

@@ -1,5 +1,5 @@
 import { DeletionRecord } from "@/lib/types";
-import { deriveReason, deriveStage } from "./derive";
+import { deriveReason, deriveLifecycle } from "./derive";
 import { allProjects } from "@/lib/projects";
 
 // Deterministic PRNG so the demo dataset is stable across reloads/builds.
@@ -31,6 +31,8 @@ interface UniverseRow {
   last_modified_by: string | null;
   deletion_notes: string | null;
   deletion_reason_raw: null;
+  last_published_at: string | null;
+  last_unpublished_at: string | null;
 }
 
 const PAGE_TYPES = ["service", "blog", "category"];
@@ -39,7 +41,7 @@ const USERS = [
   "tom.becker@gushwork.ai", "priya.nair@gushwork.ai", "auto-cleanup@system",
   "leo.martin@gushwork.ai", "ops-bot@system",
 ];
-const STATUSES: (string | null)[] = [null, null, null, "generated", "generated", "in_progress", "draft"];
+const STATUSES: (string | null)[] = [null, null, null, "generated", "generated", "generated"];
 
 const DAY = 86400000;
 
@@ -72,12 +74,28 @@ function buildUniverse(now: number): UniverseRow[] {
       deleted = d;
     }
 
-    const status = STATUSES[Math.floor(rng() * STATUSES.length)];
+    let status = STATUSES[Math.floor(rng() * STATUSES.length)];
     // product_count: a chunk have zero (drives "No Products Tagged")
     const pc = rng() < 0.34 ? 0 : Math.floor(rng() * 240) + 1;
     const updated = deleted ?? created + Math.floor(rng() * (now - created));
     const pageType = PAGE_TYPES[Math.floor(rng() * PAGE_TYPES.length)];
     const kw = `${proj.name.split(" ")[0].toLowerCase()} ${pageType} keyword ${1000 + i}`;
+
+    // Simulate publish lifecycle for generated pages that were deleted.
+    let lastPub: number | null = null;
+    let lastUnpub: number | null = null;
+    if (deleted && status === "generated") {
+      const roll = rng();
+      if (roll < 0.45) {
+        // published -> unpublished -> deleted
+        lastPub = created + Math.floor((deleted - created) * 0.3);
+        lastUnpub = created + Math.floor((deleted - created) * 0.7);
+      } else if (roll < 0.5) {
+        // deleted while still published
+        lastPub = created + Math.floor((deleted - created) * 0.5);
+        status = "published";
+      }
+    }
 
     rows.push({
       cluster_id: `clu_${(100000 + i).toString(36)}`,
@@ -99,6 +117,8 @@ function buildUniverse(now: number): UniverseRow[] {
       deletion_notes:
         deleted && rng() < 0.25 ? "Flagged during routine catalog QA sweep." : null,
       deletion_reason_raw: null,
+      last_published_at: lastPub ? new Date(lastPub).toISOString() : null,
+      last_unpublished_at: lastUnpub ? new Date(lastUnpub).toISOString() : null,
     });
   }
   return rows;
@@ -124,7 +144,7 @@ export function fetchDeletionsDemo(fromISO: string, toISO: string): DeletionReco
       return {
         ...rec,
         deletion_reason: deriveReason(rec),
-        workflow_stage: deriveStage(rec),
+        workflow_stage: deriveLifecycle(rec),
       };
     })
     .sort((a, b) => +new Date(b.deleted_at) - +new Date(a.deleted_at));

@@ -168,15 +168,27 @@ export function insights(
     });
   }
 
-  // Stage concentration — before page generation
-  const beforePage = filtered.filter((r) => r.workflow_stage === "Page Status NULL").length;
-  if (beforePage > 0) {
-    const pct = (beforePage / total) * 100;
+  // Lifecycle: deleted before ever being generated
+  const yetToGen = filtered.filter((r) => r.workflow_stage === "Yet to be Generated").length;
+  if (yetToGen > 0) {
+    const pct = (yetToGen / total) * 100;
     out.push({
       id: "stage",
       kind: "stage",
       severity: pct >= 60 ? "warning" : "info",
-      title: `${pct.toFixed(0)}% of deletions occurred before page generation.`,
+      title: `${pct.toFixed(0)}% were deleted before ever being generated.`,
+    });
+  }
+
+  // Lifecycle: published then unpublished then deleted
+  const unpubDeleted = filtered.filter((r) => r.workflow_stage === "Unpublished & Deleted").length;
+  if (unpubDeleted > 0) {
+    const pct = (unpubDeleted / total) * 100;
+    out.push({
+      id: "unpublished",
+      kind: "stage",
+      severity: pct >= 30 ? "warning" : "info",
+      title: `${pct.toFixed(0)}% were published, then unpublished before deletion.`,
     });
   }
 

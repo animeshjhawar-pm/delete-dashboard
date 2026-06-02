@@ -1,6 +1,6 @@
 import { Pool, type PoolConfig } from "pg";
 import { DeletionRecord } from "@/lib/types";
-import { deriveReason, deriveStage } from "./derive";
+import { deriveReason, deriveLifecycle } from "./derive";
 
 // ---------------------------------------------------------------------------
 // Connection
@@ -61,6 +61,19 @@ const T = {
   clusters: process.env.TBL_CLUSTERS || "clusters",
   projects: process.env.TBL_PROJECTS || "projects",
   resourceMap: process.env.TBL_RESOURCE_MAP || "cluster_resource_mapping",
+  processes: process.env.TBL_PROCESSES || "processes",
+};
+
+// Process-history vocabulary (overridable). Used to detect publish/unpublish.
+const PROC = {
+  table: process.env.COL_PROC_TABLE || "table_name",
+  rowId: process.env.COL_PROC_ROW_ID || "row_id",
+  type: process.env.COL_PROC_TYPE || "process_type",
+  status: process.env.COL_PROC_STATUS || "process_status",
+  completedAt: process.env.COL_PROC_COMPLETED || "completed_at",
+  publishType: process.env.PROC_PUBLISH_TYPE || "PAGE_PUBLISH",
+  unpublishType: process.env.PROC_UNPUBLISH_TYPE || "PAGE_UNPUBLISH",
+  doneStatus: process.env.PROC_DONE_STATUS || "COMPLETED",
 };
 const C = {
   id: process.env.COL_ID || "id",
@@ -145,14 +158,28 @@ export async function fetchDeletions(fromISO: string, toISO: string): Promise<De
         FROM ${qt(T.resourceMap)} rm
         WHERE rm.${id(C.rmClusterId)} = c.${id(C.id)}
           AND rm.${id(C.rmDeletedAt)} IS NULL
-      )                                  AS product_count
+      )                                  AS product_count,
+      (
+        SELECT MAX(pr.${id(PROC.completedAt)})
+        FROM ${qt(T.processes)} pr
+        WHERE pr.${id(PROC.table)} = $6 AND pr.${id(PROC.rowId)} = c.${id(C.id)}
+          AND pr.${id(PROC.type)} = $3 AND pr.${id(PROC.status)} = $5
+      )                                  AS last_published_at,
+      (
+        SELECT MAX(pr.${id(PROC.completedAt)})
+        FROM ${qt(T.processes)} pr
+        WHERE pr.${id(PROC.table)} = $6 AND pr.${id(PROC.rowId)} = c.${id(C.id)}
+          AND pr.${id(PROC.type)} = $4 AND pr.${id(PROC.status)} = $5
+      )                                  AS last_unpublished_at
     FROM ${qt(T.clusters)} c
     LEFT JOIN ${qt(T.projects)} p ON p.${id(C.id)} = c.${id(C.projectId)}
     WHERE ${c} IS NOT NULL AND ${c} >= $1 AND ${c} <= $2
     ORDER BY ${c} DESC
     LIMIT ${MAX_ROWS}`;
 
-  const { rows } = await p.query(sql, [fromISO, toISO]);
+  const { rows } = await p.query(sql, [
+    fromISO, toISO, PROC.publishType, PROC.unpublishType, PROC.doneStatus, T.clusters,
+  ]);
   return rows.map(normalizeRow);
 }
 
@@ -209,10 +236,12 @@ function normalizeRow(r: Record<string, unknown>): DeletionRecord {
     last_modified_by: r.deleted_by == null ? null : String(r.deleted_by),
     deletion_notes: null, // no dedicated notes column in this schema
     deletion_reason_raw: null as string | null,
+    last_published_at: toISO(r.last_published_at),
+    last_unpublished_at: toISO(r.last_unpublished_at),
   };
   return {
     ...base,
     deletion_reason: deriveReason(base),
-    workflow_stage: deriveStage(base),
+    workflow_stage: deriveLifecycle(base),
   };
 }

@@ -23,7 +23,7 @@ const COLS: Col[] = [
   { key: "client", label: "Client", sortable: true, render: (r) => <span className="text-muted">{r.client ?? "—"}</span> },
   { key: "project", label: "Project", sortable: true, render: (r) => <ProjectBadge project={r.project} domain={r.project_domain} /> },
   { key: "deleted_by", label: "Deleted By", sortable: true, render: (r) => <UserChip user={r.deleted_by} /> },
-  { key: "workflow_stage", label: "Stage", sortable: true, render: (r) => <Badge tone="muted">{r.workflow_stage}</Badge> },
+  { key: "workflow_stage", label: "Lifecycle", sortable: true, render: (r) => <Badge tone="muted">{r.workflow_stage}</Badge> },
   { key: "page_status", label: "Status", sortable: true, render: (r) => <span className="text-muted">{r.page_status ?? <span className="text-muted-2 italic">null</span>}</span> },
   { key: "deletion_reason", label: "Reason", sortable: true, render: (r) => <Badge tone="accent">{r.deletion_reason}</Badge> },
   { key: "product_count", label: "Products", sortable: true, className: "text-right", render: (r) => <span className="tnum text-muted">{r.product_count ?? "—"}</span> },
@@ -43,7 +43,7 @@ export function AuditTable({
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(10);
   const [sort, setSort] = useState<keyof DeletionRecord>("deleted_at");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
@@ -96,15 +96,15 @@ export function AuditTable({
   return (
     <Card className="col-span-12 animate-in overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 p-5 pb-3">
-        <SectionTitle title="Audit Log" subtitle={`${fmtNum(total)} deletion records · click a row to investigate`} />
+        <SectionTitle title="Recent Deletions · Audit Log" subtitle={`${fmtNum(total)} deleted clusters · newest first · click a row to investigate`} />
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-2" />
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-2" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search clusters, users…"
-              className="h-9 w-[200px] rounded-lg border border-[var(--border)] bg-surface pl-8 pr-3 text-sm text-foreground focus-ring"
+              placeholder="Search clusters, projects, users, keywords…"
+              className="h-10 w-[260px] rounded-lg border border-[var(--border)] bg-surface pl-9 pr-3 text-sm text-foreground focus-ring sm:w-[340px]"
             />
           </div>
           <a href={tableExportHref || exportHref} download>

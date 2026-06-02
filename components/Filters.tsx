@@ -65,7 +65,7 @@ export function Filters({
         <Select className="w-[170px]" value={get("project")} onChange={(v) => set("project", v)} placeholder="All Projects" options={opt(options?.projects)} />
         <Select className="w-[160px]" value={get("user")} onChange={(v) => set("user", v)} placeholder="All Users" options={opt(options?.users)} />
         <Select className="w-[170px]" value={get("reason")} onChange={(v) => set("reason", v)} placeholder="All Reasons" options={opt(options?.reasons)} />
-        <Select className="w-[150px]" value={get("stage")} onChange={(v) => set("stage", v)} placeholder="All Stages" options={opt(options?.stages)} />
+        <Select className="w-[180px]" value={get("stage")} onChange={(v) => set("stage", v)} placeholder="All Lifecycle" options={opt(options?.stages)} />
         <Select className="w-[140px]" value={get("status")} onChange={(v) => set("status", v)} placeholder="All Statuses" options={statusOptions} />
 
         <div className="ml-auto flex items-center gap-2">

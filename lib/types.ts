@@ -21,6 +21,9 @@ export interface DeletionRecord {
   project_domain?: string | null;
   topic?: string | null;
   page_type?: string | null;
+  // Publish lifecycle (from processes history)
+  last_published_at?: string | null;
+  last_unpublished_at?: string | null;
   // Derived
   deletion_reason: string; // canonical reason (see derive.ts)
   workflow_stage: string; // canonical stage (see derive.ts)

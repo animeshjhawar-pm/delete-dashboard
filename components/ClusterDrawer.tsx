@@ -90,8 +90,11 @@ export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | nu
           </Section>
 
           <Section icon={<Activity size={13} />} title="Lifecycle">
+            <Row label="Lifecycle Status"><Badge tone="muted">{r.workflow_stage}</Badge></Row>
             <Row label="Created At">{fmtDateTime(r.created_at)}</Row>
             <Row label="Updated At">{fmtDateTime(r.updated_at)}</Row>
+            {r.last_published_at && <Row label="Last Published At"><span className="text-[var(--success)]">{fmtDateTime(r.last_published_at)}</span></Row>}
+            {r.last_unpublished_at && <Row label="Last Unpublished At"><span className="text-[var(--warning)]">{fmtDateTime(r.last_unpublished_at)}</span></Row>}
             <Row label="Deleted At"><span className="font-medium text-[var(--critical)]">{fmtDateTime(r.deleted_at)}</span></Row>
           </Section>
 

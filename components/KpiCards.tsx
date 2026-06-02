@@ -75,7 +75,7 @@ export function KpiCards({
       />
       <Kpi
         icon={<FileText size={16} />}
-        label="Top Deletion Page Status"
+        label="Top Lifecycle Status"
         value={topStatus ? <span className="text-base font-semibold">{topStatus.key}</span> : "—"}
         sub={topStatus ? `${fmtPct(topStatus.pct)} of deletions` : undefined}
       />

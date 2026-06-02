@@ -93,7 +93,7 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
   const total = data.reduce((s, d) => s + d.count, 0);
   return (
     <Card className="p-5 col-span-12 lg:col-span-4 animate-in">
-      <SectionTitle title="Deletions by Workflow Stage" subtitle="Where clusters are removed" info="Share of deletions by the cluster's page status at deletion time (e.g. page not yet generated vs. already generated). Reflects the global time range and filters." />
+      <SectionTitle title="Deletions by Lifecycle Status" subtitle="Page state when deleted" info="Lifecycle state at deletion, from page status + publish history: Yet to be Generated (status NULL), Generated (never published), Unpublished & Deleted (published then unpublished), Published & Deleted. Reflects the global time range and filters." />
       <div className="h-[240px] relative">
         {loading || total === 0 ? (
           <EmptyState message={loading ? "Loading…" : "No data"} />
@@ -136,7 +136,7 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
 export function ReasonBar({ data, loading }: { data: CountSlice[]; loading?: boolean }) {
   return (
     <Card className="p-5 col-span-12 lg:col-span-8 animate-in">
-      <SectionTitle title="Deletions by Reason" subtitle="Root-cause distribution" info="Derived reason for each deletion: 'No Products Tagged' (0 products), or before/after page generation based on page status. Reflects the global time range and filters." />
+      <SectionTitle title="Deletions by Reason" subtitle="Product-tagging signal" info="Whether the deleted cluster had any products tagged: 'No Products Tagged' (0 active product mappings) vs 'Products Tagged'. Independent of lifecycle status. Reflects the global time range and filters." />
       <div className="h-[240px]">
         {loading || data.length === 0 ? (
           <EmptyState message={loading ? "Loading…" : "No data"} />
