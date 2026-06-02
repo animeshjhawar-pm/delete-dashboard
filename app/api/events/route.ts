@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadWindow } from "@/lib/data/source";
-import { parseRange, parseFilters } from "@/lib/range";
+import { parseRange, parseFilters, parseMaxRows } from "@/lib/range";
 import { applyFilters, groupEvents } from "@/lib/data/aggregate";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const range = parseRange(sp);
   const filters = parseFilters(sp);
 
-  const { records, source } = await loadWindow(range.from, range.to);
+  const { records, source } = await loadWindow(range.from, range.to, parseMaxRows(sp));
   let filtered = applyFilters(records, filters);
 
   // Local-to-this-tab lifecycle filter (independent of the global filters).

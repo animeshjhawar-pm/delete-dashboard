@@ -70,6 +70,11 @@ export function parseFilters(sp: URLSearchParams): Partial<Filters> {
   };
 }
 
+export function parseMaxRows(sp: URLSearchParams): number | undefined {
+  const v = Number(sp.get("maxRows"));
+  return Number.isFinite(v) && v > 0 ? Math.floor(v) : undefined;
+}
+
 export function parseGranularity(sp: URLSearchParams): Granularity | undefined {
   const g = sp.get("granularity");
   // Only Daily / Weekly are supported; anything else falls back to auto.

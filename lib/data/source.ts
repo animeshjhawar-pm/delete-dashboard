@@ -15,13 +15,13 @@ export interface SourceResult {
 // while the short TTL keeps each fresh page load close to live. Tunable.
 const WINDOW_TTL_MS = Number(process.env.CACHE_TTL_MS || 5000);
 
-async function loadWindowUncached(fromISO: string, toISO: string): Promise<SourceResult> {
+async function loadWindowUncached(fromISO: string, toISO: string, maxRows?: number): Promise<SourceResult> {
   if (process.env.DATABASE_URL) {
     try {
       // Independent queries — run them on separate pool connections in parallel
       // so the window costs one round-trip, not two.
       const [records, createdInWindow] = await Promise.all([
-        fetchDeletions(fromISO, toISO),
+        fetchDeletions(fromISO, toISO, maxRows),
         countCreated(fromISO, toISO),
       ]);
       if (records) {
@@ -41,9 +41,9 @@ async function loadWindowUncached(fromISO: string, toISO: string): Promise<Sourc
 // Tries the real database first; on any failure (no DATABASE_URL, unreachable,
 // unmappable schema) falls back to the deterministic demo dataset so the
 // dashboard is always functional.
-export async function loadWindow(fromISO: string, toISO: string): Promise<SourceResult> {
-  const key = `win:${roundISO(fromISO)}:${roundISO(toISO)}`;
-  return cached(key, WINDOW_TTL_MS, () => loadWindowUncached(fromISO, toISO));
+export async function loadWindow(fromISO: string, toISO: string, maxRows?: number): Promise<SourceResult> {
+  const key = `win:${roundISO(fromISO)}:${roundISO(toISO)}:${maxRows ?? "d"}`;
+  return cached(key, WINDOW_TTL_MS, () => loadWindowUncached(fromISO, toISO, maxRows));
 }
 
 export async function describeSource() {

@@ -134,9 +134,10 @@ function clustersTableExists(): Promise<boolean> {
 // ---------------------------------------------------------------------------
 const MAX_ROWS = Number(process.env.MAX_ROWS || 50000);
 
-export async function fetchDeletions(fromISO: string, toISO: string): Promise<DeletionRecord[] | null> {
+export async function fetchDeletions(fromISO: string, toISO: string, maxRows?: number): Promise<DeletionRecord[] | null> {
   const p = getPool();
   if (!p || !(await clustersTableExists())) return null;
+  const limit = Math.min(Math.max(1, maxRows || MAX_ROWS), 500000);
 
   const c = `c.${id(C.deletedAt)}`;
   // product_count via a correlated subquery scoped to each deleted cluster.
@@ -184,7 +185,7 @@ export async function fetchDeletions(fromISO: string, toISO: string): Promise<De
     LEFT JOIN ${qt(T.projects)} p ON p.${id(C.id)} = c.${id(C.projectId)}
     WHERE ${c} IS NOT NULL AND ${c} >= $1 AND ${c} <= $2
     ORDER BY ${c} DESC
-    LIMIT ${MAX_ROWS}`;
+    LIMIT ${limit}`;
 
   const { rows } = await p.query(sql, [
     fromISO, toISO, PROC.publishType, PROC.unpublishType, PROC.doneStatus, T.clusters,

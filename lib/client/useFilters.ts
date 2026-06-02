@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Keys that participate in the dashboard query (URL is the single source of truth).
 export const FILTER_KEYS = [
-  "range", "from", "to", "project", "user", "stage", "search", "granularity",
+  "range", "from", "to", "project", "user", "stage", "search", "granularity", "maxRows",
 ] as const;
 
 export type FilterKey = (typeof FILTER_KEYS)[number];

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { loadWindow } from "@/lib/data/source";
-import { parseRange, parseFilters } from "@/lib/range";
+import { parseRange, parseFilters, parseMaxRows } from "@/lib/range";
 import { applyFilters } from "@/lib/data/aggregate";
 import { DeletionRecord } from "@/lib/types";
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const range = parseRange(sp);
   const filters = parseFilters(sp);
-  const { records } = await loadWindow(range.from, range.to);
+  const { records } = await loadWindow(range.from, range.to, parseMaxRows(sp));
   const rows = applyFilters(records, filters);
 
   const header = COLUMNS.map((c) => c.label).join(",");

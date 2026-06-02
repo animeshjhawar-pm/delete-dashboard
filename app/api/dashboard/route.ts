@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadWindow } from "@/lib/data/source";
-import { parseRange, parseFilters, parseGranularity } from "@/lib/range";
+import { parseRange, parseFilters, parseGranularity, parseMaxRows } from "@/lib/range";
 import {
   applyFilters, buildFilterOptions, computeKpis, trend, autoGranularity,
   byStage, byUser, byClient, insights,
@@ -18,9 +18,10 @@ export async function GET(req: NextRequest) {
   // switch Daily/Weekly without a refetch.
   const granularity = parseGranularity(sp) ?? autoGranularity(range.from, range.to);
 
+  const maxRows = parseMaxRows(sp);
   const [cur, prev] = await Promise.all([
-    loadWindow(range.from, range.to),
-    loadWindow(range.prevFrom, range.prevTo),
+    loadWindow(range.from, range.to, maxRows),
+    loadWindow(range.prevFrom, range.prevTo, maxRows),
   ]);
 
   // Filter options come from the *unfiltered* window so the user can always

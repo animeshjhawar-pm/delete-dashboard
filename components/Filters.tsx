@@ -1,6 +1,7 @@
 "use client";
 
-import { Download, X, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { Download, X, SlidersHorizontal, SlidersVertical } from "lucide-react";
 import { Button, Badge, ProjectBadge, UserChip } from "./ui";
 import { SingleSelect, MultiSelect } from "./Dropdown";
 import { useFilters } from "@/lib/client/useFilters";
@@ -12,11 +13,13 @@ const RANGE_OPTIONS = [
   { value: "custom", label: "Custom Range" },
 ];
 
-function toDateInput(iso?: string) {
+const pad = (n: number) => String(n).padStart(2, "0");
+// ISO -> value for <input type="datetime-local"> (local, minute precision)
+function toLocalInput(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "";
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export function Filters({
@@ -48,20 +51,28 @@ export function Filters({
         {range === "custom" && (
           <div className="flex items-center gap-1.5">
             <input
-              type="date"
-              value={toDateInput(params.from) || toDateInput(new Date(Date.now() - 7 * 864e5).toISOString())}
+              type="datetime-local"
+              value={toLocalInput(params.from) || toLocalInput(new Date(Date.now() - 7 * 864e5).toISOString())}
               onChange={(e) => set("from", e.target.value ? new Date(e.target.value).toISOString() : undefined)}
               className="h-9 rounded-lg border border-[var(--border)] bg-surface px-2.5 text-sm text-foreground focus-ring"
             />
             <span className="text-muted-2 text-xs">to</span>
             <input
-              type="date"
-              value={toDateInput(params.to) || toDateInput(new Date().toISOString())}
-              onChange={(e) => set("to", e.target.value ? new Date(e.target.value + "T23:59:59").toISOString() : undefined)}
+              type="datetime-local"
+              value={toLocalInput(params.to) || toLocalInput(new Date().toISOString())}
+              onChange={(e) => set("to", e.target.value ? new Date(e.target.value).toISOString() : undefined)}
               className="h-9 rounded-lg border border-[var(--border)] bg-surface px-2.5 text-sm text-foreground focus-ring"
             />
           </div>
         )}
+
+        <Link
+          href="/configure"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 text-xs text-muted transition-colors hover:border-[var(--border-strong)] hover:text-foreground focus-ring"
+          title="Configure the exact d_at window (date + time, all-time)"
+        >
+          <SlidersVertical size={14} /> Configure
+        </Link>
 
         <div className="mx-1 hidden h-6 w-px bg-[var(--border)] sm:block" />
 
