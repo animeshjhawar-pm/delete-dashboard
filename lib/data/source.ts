@@ -9,10 +9,11 @@ export interface SourceResult {
   source: "database" | "demo";
 }
 
-// Window data is shared by the dashboard + audit + export endpoints and across
-// concurrent users. Cache + single-flight collapse those into one query per
-// time bucket. Tunable; short enough that "Refresh" feels live.
-const WINDOW_TTL_MS = Number(process.env.CACHE_TTL_MS || 20000);
+// Window data is shared by the dashboard + audit + export endpoints. The cache
+// is primarily a single-flight de-dup: concurrent identical requests (e.g. the
+// dashboard + events fetches a page load fires together) collapse to ONE query,
+// while the short TTL keeps each fresh page load close to live. Tunable.
+const WINDOW_TTL_MS = Number(process.env.CACHE_TTL_MS || 5000);
 
 async function loadWindowUncached(fromISO: string, toISO: string): Promise<SourceResult> {
   if (process.env.DATABASE_URL) {

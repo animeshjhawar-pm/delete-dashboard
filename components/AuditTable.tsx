@@ -125,17 +125,19 @@ export function AuditTable({
                   >
                     <td className="whitespace-nowrap px-4 py-2.5 tnum text-muted">{fmtDateTime(ev.deleted_at)}</td>
                     <td className="px-4 py-2.5"><UserChip user={ev.deleted_by} compact /></td>
-                    <td className="max-w-[200px] px-4 py-2.5">
-                      {ev.projects.length === 0 ? <span className="text-muted">—</span>
-                        : ev.projects.length === 1 ? <ProjectBadge project={ev.projects[0]} domain={ev.project_domain} />
-                        : <span className="inline-flex items-center gap-1.5 text-muted"><Layers size={13} /> {ev.projects.length} projects</span>}
+                    <td className="px-4 py-2.5">
+                      <div className="max-w-[180px]">
+                        {ev.projects.length === 0 ? <span className="text-muted">—</span>
+                          : ev.projects.length === 1 ? <ProjectBadge project={ev.projects[0]} domain={ev.project_domain} />
+                          : <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-muted"><Layers size={13} /> {ev.projects.length} projects</span>}
+                      </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-2.5">
                       <span className="font-semibold text-foreground tnum">{ev.count}</span>
                       <span className="text-muted-2"> {ev.count === 1 ? "cluster" : "clusters"}</span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex max-w-[300px] flex-wrap gap-1.5">
                         {ev.statuses.map((s) => <StatusPill key={s.key} status={s.key} count={ev.count > 1 ? s.count : undefined} />)}
                       </div>
                     </td>

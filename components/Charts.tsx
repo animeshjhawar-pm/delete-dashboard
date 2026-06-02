@@ -25,13 +25,31 @@ function TooltipBox({ title, rows }: { title?: string; rows: { label: string; va
   );
 }
 
+// Re-bucket daily points into ISO weeks (Monday-anchored) on the client.
+function toWeekly(points: TimePoint[]): TimePoint[] {
+  const DAY = 86400000;
+  const map = new Map<number, number>();
+  for (const p of points) {
+    const d = new Date(p.bucket);
+    d.setHours(0, 0, 0, 0);
+    const monday = d.getTime() - ((d.getDay() + 6) % 7) * DAY;
+    map.set(monday, (map.get(monday) ?? 0) + p.count);
+  }
+  return Array.from(map.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([t, count]) => ({ bucket: new Date(t).toISOString(), count }));
+}
+
 /* ---------------- Trend ---------------- */
 export function TrendChart({ points, granularity, loading }: { points: TimePoint[]; granularity: Granularity; loading?: boolean }) {
   const { get, set } = useFilters();
   const raw = (get("granularity") || granularity) as Granularity;
   const g: Granularity = raw === "weekly" ? "weekly" : "daily";
   const total = points.reduce((s, p) => s + p.count, 0);
-  const data = points.map((p) => ({ ...p, label: fmtBucket(p.bucket, g) }));
+  // `points` always arrive daily; weekly is re-bucketed here on the client so
+  // toggling Daily/Weekly never refetches the dashboard.
+  const bucketed = g === "weekly" ? toWeekly(points) : points;
+  const data = bucketed.map((p) => ({ ...p, label: fmtBucket(p.bucket, g) }));
 
   return (
     <Card className="p-5 col-span-12 lg:col-span-6 animate-in">

@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const range = parseRange(sp);
   const filters = parseFilters(sp);
+  // Recommended default granularity; points are always daily so the client can
+  // switch Daily/Weekly without a refetch.
   const granularity = parseGranularity(sp) ?? autoGranularity(range.from, range.to);
 
   const [cur, prev] = await Promise.all([
@@ -38,7 +40,7 @@ export async function GET(req: NextRequest) {
   const payload: DashboardPayload = {
     source: cur.source,
     kpis: computeKpis(filtered, cur.createdInWindow, prevFiltered.length),
-    trend: { granularity, points: trend(filtered, range.from, range.to, granularity) },
+    trend: { granularity, points: trend(filtered, range.from, range.to, "daily") },
     byStage: byStage(filtered),
     byUser: byUser(filtered),
     byClient: byClient(filtered),

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Boxes, Activity, Trash2, Copy, ArrowLeft, Layers, ChevronRight, Clock } from "lucide-react";
-import { Badge, UserChip, StatusPill, ProjectBadge } from "./ui";
+import { X, Boxes, Activity, Trash2, Copy, ArrowLeft, Layers, Clock } from "lucide-react";
+import { UserChip, StatusPill, ProjectBadge, PageTypeChip, lifecycleColor } from "./ui";
 import { DeletionRecord, DeletionEvent } from "@/lib/types";
 import { fmtDateTime, fmtNum } from "@/lib/format";
 import { faviconForProject } from "@/lib/projects";
@@ -111,32 +111,38 @@ function EventDetail({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          {event.statuses.map((s) => <StatusPill key={s.key} status={s.key} count={s.count} />)}
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-2">
+          Clusters ({event.count}) — click a chip to inspect
         </div>
-
-        <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-2">Clusters ({event.count})</div>
-          {event.clusters.map((c) => (
-            <button
-              key={c.cluster_id}
-              onClick={() => onSelectRecord(c)}
-              className="card-hover flex min-h-[72px] w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-surface-2 p-3 text-left transition-colors hover:border-[var(--border-strong)]"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-foreground">{c.cluster_name ?? c.cluster_id}</div>
-                <div className="truncate font-mono text-[11px] text-muted-2">{c.cluster_id}</div>
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <StatusPill status={c.workflow_stage} />
-                  {c.page_type && <span className="text-[11px] text-muted-2">· {c.page_type}</span>}
-                </div>
+        {/* Cluster chips, grouped by lifecycle status */}
+        <div className="space-y-3">
+          {event.statuses.map((s) => (
+            <div key={s.key}>
+              <div className="mb-1.5"><StatusPill status={s.key} count={s.count} /></div>
+              <div className="flex flex-wrap gap-1.5">
+                {event.clusters.filter((c) => c.workflow_stage === s.key).map((c) => (
+                  <ClusterChip key={c.cluster_id} cluster={c} onClick={() => onSelectRecord(c)} />
+                ))}
               </div>
-              <ChevronRight size={16} className="shrink-0 text-muted-2" />
-            </button>
+            </div>
           ))}
         </div>
       </div>
     </>
+  );
+}
+
+function ClusterChip({ cluster: c, onClick }: { cluster: DeletionRecord; onClick: () => void }) {
+  const label = c.topic ?? c.cluster_name ?? c.cluster_id;
+  return (
+    <button
+      onClick={onClick}
+      title={`${label}\n${c.cluster_id}`}
+      className="inline-flex max-w-[210px] items-center gap-1.5 rounded-full border border-[var(--border)] bg-surface px-2.5 py-1 text-xs text-foreground transition-colors hover:border-[var(--border-strong)] hover:bg-surface-2 focus-ring"
+    >
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: lifecycleColor(c.workflow_stage) }} />
+      <span className="truncate">{label}</span>
+    </button>
   );
 }
 
@@ -159,8 +165,17 @@ function ClusterDetail({
             </span>
           )}
           <div className="min-w-0">
-            <h2 className="truncate text-base font-semibold text-foreground">{r.cluster_name ?? r.cluster_id}</h2>
-            <div className="mt-1"><StatusPill status={r.workflow_stage} /></div>
+            <h2 className="truncate text-sm font-semibold text-foreground" title={r.topic ?? r.cluster_name ?? ""}>
+              {r.topic ?? r.cluster_name ?? r.cluster_id}
+            </h2>
+            <div className="mt-0.5 flex items-center gap-1.5">
+              <span className="truncate font-mono text-[11px] text-muted-2">{r.cluster_id}</span>
+              <button onClick={() => navigator.clipboard?.writeText(r.cluster_id)} className="shrink-0 text-muted-2 hover:text-foreground"><Copy size={11} /></button>
+            </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <StatusPill status={r.workflow_stage} />
+              <PageTypeChip type={r.page_type} />
+            </div>
           </div>
         </div>
         <button onClick={onClose} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground focus-ring">
@@ -173,7 +188,7 @@ function ClusterDetail({
           <Row label="Cluster ID"><span className="inline-flex items-center gap-1.5"><Mono>{r.cluster_id}</Mono><button onClick={() => navigator.clipboard?.writeText(r.cluster_id)} className="text-muted-2 hover:text-foreground"><Copy size={12} /></button></span></Row>
           <Row label="Primary Keyword">{r.cluster_name ?? "—"}</Row>
           {r.topic && <Row label="Topic">{r.topic}</Row>}
-          {r.page_type && <Row label="Page Type">{r.page_type}</Row>}
+          <Row label="Page Type"><PageTypeChip type={r.page_type} /></Row>
           <Row label="Project">
             <span className="inline-flex items-center gap-2">
               {favicon && (
@@ -196,7 +211,7 @@ function ClusterDetail({
 
         <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
           <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
-          <Row label="Page Type">{r.page_type ?? "—"}</Row>
+          <Row label="Page Type"><PageTypeChip type={r.page_type} /></Row>
         </Section>
       </div>
     </>

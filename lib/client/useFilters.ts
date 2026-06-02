@@ -62,9 +62,12 @@ export function useFilters() {
     [params, setMulti],
   );
 
+  // Query string sent to the data APIs. Excludes `granularity` — that only
+  // affects how the trend is bucketed (done client-side), so changing it must
+  // not trigger a full dashboard refetch. It still lives in the URL for sharing.
   const queryString = useMemo(() => {
     const q = new URLSearchParams();
-    for (const k of FILTER_KEYS) if (params[k]) q.set(k, params[k]);
+    for (const k of FILTER_KEYS) if (k !== "granularity" && params[k]) q.set(k, params[k]);
     return q.toString();
   }, [params]);
 

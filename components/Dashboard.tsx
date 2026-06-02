@@ -31,6 +31,8 @@ export function Dashboard() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Real-time activity indicator — filters update in place without a reload */}
+      {loading && <div className="topbar"><span /></div>}
       <Header lastUpdated={lastUpdated} loading={loading} onRefresh={refresh} source={data?.source} />
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 pb-5 sm:px-6">

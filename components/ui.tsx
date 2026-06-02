@@ -131,13 +131,31 @@ export function Select({
   );
 }
 
+const PAGE_TYPE_COLORS: Record<string, string> = {
+  service: "var(--chart-4)",
+  blog: "var(--chart-5)",
+  category: "var(--chart-6)",
+};
+export function PageTypeChip({ type }: { type: string | null | undefined }) {
+  if (!type) return <span className="text-muted-2">—</span>;
+  const c = PAGE_TYPE_COLORS[type.toLowerCase()] ?? "var(--chart-8)";
+  return (
+    <span
+      className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium capitalize"
+      style={{ background: `color-mix(in srgb, ${c} 16%, transparent)`, color: c }}
+    >
+      {type}
+    </span>
+  );
+}
+
 export function ProjectBadge({ project, domain, size = 16 }: { project: string | null; domain?: string | null; size?: number }) {
   const [err, setErr] = React.useState(false);
   const resolvedDomain = domain ?? getProjectDomain(project);
   const src = project ? faviconForProject(project, 64, resolvedDomain) : null;
   if (!project) return <span className="text-muted">—</span>;
   return (
-    <span className="inline-flex items-center gap-1.5 min-w-0">
+    <span className="inline-flex items-center gap-1.5 min-w-0" title={project}>
       <span
         className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[4px] bg-surface-2 text-[9px] font-bold text-muted-2 border border-[var(--border)]"
         style={{ width: size, height: size }}
