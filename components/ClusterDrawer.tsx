@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Boxes, Activity, Trash2, Copy } from "lucide-react";
-import { Badge, UserChip } from "./ui";
-import { DeletionRecord } from "@/lib/types";
-import { fmtDateTime } from "@/lib/format";
+import { X, Boxes, Activity, Trash2, Copy, ArrowLeft, Layers, ChevronRight, Clock } from "lucide-react";
+import { Badge, UserChip, StatusPill, ProjectBadge } from "./ui";
+import { DeletionRecord, DeletionEvent } from "@/lib/types";
+import { fmtDateTime, fmtNum } from "@/lib/format";
 import { faviconForProject } from "@/lib/projects";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -31,10 +31,22 @@ function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-mono text-[12px] text-muted">{children}</span>;
 }
 
-export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | null; onClose: () => void }) {
+// Unified right-side drawer: shows a deletion EVENT (cards per cluster) or a
+// single CLUSTER's full detail. From an event you can drill into a cluster and
+// navigate back.
+export function DetailDrawer({
+  event, record, onSelectRecord, onBack, onClose,
+}: {
+  event: DeletionEvent | null;
+  record: DeletionRecord | null;
+  onSelectRecord: (r: DeletionRecord) => void;
+  onBack: () => void;
+  onClose: () => void;
+}) {
+  const open = !!(event || record);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    if (record) {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && (record && event ? onBack() : onClose());
+    if (open) {
       document.addEventListener("keydown", onKey);
       document.body.style.overflow = "hidden";
     }
@@ -42,68 +54,151 @@ export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | nu
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [record, onClose]);
+  }, [open, record, event, onBack, onClose]);
 
-  if (!record) return null;
-  const r = record;
-  const favicon = faviconForProject(r.project, 64, r.project_domain);
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-in" onClick={onClose} />
-      <aside className="relative z-10 flex h-full w-full max-w-[460px] flex-col border-l border-[var(--border)] bg-[var(--surface)] shadow-2xl animate-drawer">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] p-5">
-          <div className="flex items-start gap-3 min-w-0">
+      <aside className="relative z-10 flex h-full w-full max-w-[480px] flex-col border-l border-[var(--border)] bg-[var(--surface)] shadow-2xl animate-drawer">
+        {record ? (
+          <ClusterDetail record={record} canBack={!!event} onBack={onBack} onClose={onClose} />
+        ) : event ? (
+          <EventDetail event={event} onSelectRecord={onSelectRecord} onClose={onClose} />
+        ) : null}
+      </aside>
+    </div>
+  );
+}
+
+/* ---------------- Event view: a card per deleted cluster ---------------- */
+function EventDetail({
+  event, onSelectRecord, onClose,
+}: { event: DeletionEvent; onSelectRecord: (r: DeletionRecord) => void; onClose: () => void }) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] p-5">
+        <div className="flex items-start gap-3 min-w-0">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <Layers size={18} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-foreground">{fmtNum(event.count)} clusters deleted</h2>
+            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
+              <Clock size={12} /> {fmtDateTime(event.deleted_at)}
+            </div>
+          </div>
+        </div>
+        <button onClick={onClose} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground focus-ring">
+          <X size={18} />
+        </button>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border border-[var(--border)] bg-surface-2 p-3">
+            <div className="text-muted-2">Deleted by</div>
+            <div className="mt-1 text-foreground"><UserChip user={event.deleted_by} /></div>
+          </div>
+          <div className="rounded-lg border border-[var(--border)] bg-surface-2 p-3">
+            <div className="text-muted-2">{event.projects.length === 1 ? "Project" : "Projects"}</div>
+            <div className="mt-1 text-foreground">
+              {event.projects.length === 1
+                ? <ProjectBadge project={event.projects[0]} domain={event.project_domain} />
+                : `${event.projects.length} projects`}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          {event.statuses.map((s) => <StatusPill key={s.key} status={s.key} count={s.count} />)}
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-2">Clusters ({event.count})</div>
+          {event.clusters.map((c) => (
+            <button
+              key={c.cluster_id}
+              onClick={() => onSelectRecord(c)}
+              className="card-hover flex min-h-[72px] w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-surface-2 p-3 text-left transition-colors hover:border-[var(--border-strong)]"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-foreground">{c.cluster_name ?? c.cluster_id}</div>
+                <div className="truncate font-mono text-[11px] text-muted-2">{c.cluster_id}</div>
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <StatusPill status={c.workflow_stage} />
+                  {c.page_type && <span className="text-[11px] text-muted-2">· {c.page_type}</span>}
+                </div>
+              </div>
+              <ChevronRight size={16} className="shrink-0 text-muted-2" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---------------- Single cluster detail ---------------- */
+function ClusterDetail({
+  record: r, canBack, onBack, onClose,
+}: { record: DeletionRecord; canBack: boolean; onBack: () => void; onClose: () => void }) {
+  const favicon = faviconForProject(r.project, 64, r.project_domain);
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] p-5">
+        <div className="flex items-start gap-3 min-w-0">
+          {canBack ? (
+            <button onClick={onBack} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted hover:text-foreground focus-ring" aria-label="Back to event">
+              <ArrowLeft size={18} />
+            </button>
+          ) : (
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
               <Trash2 size={18} />
             </span>
-            <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-foreground">{r.cluster_name ?? r.cluster_id}</h2>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge tone="muted">{r.workflow_stage}</Badge>
-              </div>
-            </div>
+          )}
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-semibold text-foreground">{r.cluster_name ?? r.cluster_id}</h2>
+            <div className="mt-1"><StatusPill status={r.workflow_stage} /></div>
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground focus-ring">
-            <X size={18} />
-          </button>
         </div>
+        <button onClick={onClose} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground focus-ring">
+          <X size={18} />
+        </button>
+      </div>
 
-        {/* Body */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-5">
-          <Section icon={<Boxes size={13} />} title="Cluster Information">
-            <Row label="Cluster ID"><span className="inline-flex items-center gap-1.5"><Mono>{r.cluster_id}</Mono><button onClick={() => navigator.clipboard?.writeText(r.cluster_id)} className="text-muted-2 hover:text-foreground"><Copy size={12} /></button></span></Row>
-            <Row label="Primary Keyword">{r.cluster_name ?? "—"}</Row>
-            {r.topic && <Row label="Topic">{r.topic}</Row>}
-            {r.page_type && <Row label="Page Type">{r.page_type}</Row>}
-            <Row label="Project">
-              <span className="inline-flex items-center gap-2">
-                {favicon && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={favicon} alt="" width={16} height={16} className="rounded-[3px]" />
-                )}
-                {r.project ?? "—"}
-              </span>
-            </Row>
-          </Section>
+      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+        <Section icon={<Boxes size={13} />} title="Cluster Information">
+          <Row label="Cluster ID"><span className="inline-flex items-center gap-1.5"><Mono>{r.cluster_id}</Mono><button onClick={() => navigator.clipboard?.writeText(r.cluster_id)} className="text-muted-2 hover:text-foreground"><Copy size={12} /></button></span></Row>
+          <Row label="Primary Keyword">{r.cluster_name ?? "—"}</Row>
+          {r.topic && <Row label="Topic">{r.topic}</Row>}
+          {r.page_type && <Row label="Page Type">{r.page_type}</Row>}
+          <Row label="Project">
+            <span className="inline-flex items-center gap-2">
+              {favicon && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={favicon} alt="" width={16} height={16} className="rounded-[3px]" />
+              )}
+              {r.project ?? "—"}
+            </span>
+          </Row>
+        </Section>
 
-          <Section icon={<Activity size={13} />} title="Lifecycle">
-            <Row label="Lifecycle Status"><Badge tone="muted">{r.workflow_stage}</Badge></Row>
-            <Row label="Created At">{fmtDateTime(r.created_at)}</Row>
-            <Row label="Updated At">{fmtDateTime(r.updated_at)}</Row>
-            {r.last_published_at && <Row label="Last Published At"><span className="text-[var(--success)]">{fmtDateTime(r.last_published_at)}</span></Row>}
-            {r.last_unpublished_at && <Row label="Last Unpublished At"><span className="text-[var(--warning)]">{fmtDateTime(r.last_unpublished_at)}</span></Row>}
-            <Row label="Deleted At"><span className="font-medium text-[var(--critical)]">{fmtDateTime(r.deleted_at)}</span></Row>
-          </Section>
+        <Section icon={<Activity size={13} />} title="Lifecycle">
+          <Row label="Lifecycle Status"><StatusPill status={r.workflow_stage} /></Row>
+          <Row label="Created At">{fmtDateTime(r.created_at)}</Row>
+          <Row label="Updated At">{fmtDateTime(r.updated_at)}</Row>
+          {r.last_published_at && <Row label="Last Published At"><span className="text-[var(--success)]">{fmtDateTime(r.last_published_at)}</span></Row>}
+          {r.last_unpublished_at && <Row label="Last Unpublished At"><span className="text-[var(--warning)]">{fmtDateTime(r.last_unpublished_at)}</span></Row>}
+          <Row label="Deleted At"><span className="font-medium text-[var(--critical)]">{fmtDateTime(r.deleted_at)}</span></Row>
+        </Section>
 
-          <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
-            <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
-            <Row label="Lifecycle Status">{r.workflow_stage}</Row>
-            <Row label="Page Type">{r.page_type ?? "—"}</Row>
-          </Section>
-        </div>
-      </aside>
-    </div>
+        <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
+          <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
+          <Row label="Page Type">{r.page_type ?? "—"}</Row>
+        </Section>
+      </div>
+    </>
   );
 }

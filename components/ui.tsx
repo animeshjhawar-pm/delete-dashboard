@@ -154,20 +154,22 @@ export function ProjectBadge({ project, domain, size = 16 }: { project: string |
   );
 }
 
-export function UserChip({ user }: { user: string | null }) {
+export function UserChip({ user, compact }: { user: string | null; compact?: boolean }) {
   if (!user) return <span className="text-muted">—</span>;
-  const isBot = user.includes("system") || user.includes("bot") || user.includes("auto");
+  const isSystem = user === "system" || user.includes("bot") || user.includes("auto");
+  // Drop the email domain — show just the username (e.g. hridya.das).
+  const name = user.includes("@") ? user.split("@")[0] : user;
   return (
-    <span className="inline-flex items-center gap-1.5 min-w-0">
+    <span className="inline-flex min-w-0 items-center gap-1.5" title={user}>
       <span
         className={cn(
-          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold",
-          isBot ? "bg-surface-2 text-muted-2 border border-[var(--border)]" : "bg-[var(--accent-soft)] text-[var(--accent)]",
+          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold uppercase",
+          isSystem ? "bg-surface-2 text-muted-2 border border-[var(--border)]" : "bg-[var(--accent-soft)] text-[var(--accent)]",
         )}
       >
-        {isBot ? "⚙" : initials(user)}
+        {isSystem ? "⚙" : initials(name)}
       </span>
-      <span className="truncate">{user.split("@")[0]}</span>
+      <span className={cn("truncate", compact && "max-w-[120px]")}>{name}</span>
     </span>
   );
 }

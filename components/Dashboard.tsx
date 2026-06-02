@@ -8,15 +8,16 @@ import { KpiCards } from "./KpiCards";
 import { TrendChart, StageDonut, HBars } from "./Charts";
 import { InsightsPanel } from "./Insights";
 import { AuditTable } from "./AuditTable";
-import { ClusterDrawer } from "./ClusterDrawer";
+import { DetailDrawer } from "./ClusterDrawer";
 import { useFilters } from "@/lib/client/useFilters";
 import { useDashboard } from "@/lib/client/useDashboard";
-import { DeletionRecord } from "@/lib/types";
+import { DeletionRecord, DeletionEvent } from "@/lib/types";
 
 export function Dashboard() {
   const { queryString } = useFilters();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selected, setSelected] = useState<DeletionRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<DeletionRecord | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<DeletionEvent | null>(null);
 
   const { data, loading, lastUpdated, error } = useDashboard(queryString, refreshKey);
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -52,17 +53,18 @@ export function Dashboard() {
             queryString={queryString}
             refreshKey={refreshKey}
             exportHref={exportHref}
-            onSelect={setSelected}
-            selectedId={selected?.cluster_id}
-            stages={data?.filterOptions.stages}
+            onSelect={(r) => { setSelectedEvent(null); setSelectedRecord(r); }}
+            onSelectEvent={(e) => { setSelectedRecord(null); setSelectedEvent(e); }}
+            selectedId={selectedRecord?.cluster_id}
+            selectedEventKey={selectedEvent?.key}
           />
         </section>
 
         <section className="grid grid-cols-12 gap-4">
           <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
           <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
-          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-4" />
-          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} colSpan="lg:col-span-4" />
+          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-6" />
+          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} colSpan="lg:col-span-6" />
         </section>
 
         {/* Insights & Alerts — last section */}
@@ -73,7 +75,13 @@ export function Dashboard() {
         </footer>
       </main>
 
-      <ClusterDrawer record={selected} onClose={() => setSelected(null)} />
+      <DetailDrawer
+        event={selectedEvent}
+        record={selectedRecord}
+        onSelectRecord={(r) => setSelectedRecord(r)}
+        onBack={() => setSelectedRecord(null)}
+        onClose={() => { setSelectedRecord(null); setSelectedEvent(null); }}
+      />
     </div>
   );
 }

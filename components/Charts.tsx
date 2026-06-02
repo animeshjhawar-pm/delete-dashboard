@@ -4,7 +4,7 @@ import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { Card, SectionTitle, EmptyState, CHART_COLORS, categoricalColor, lifecycleColor, ProjectBadge, UserChip } from "./ui";
+import { Card, SectionTitle, EmptyState, categoricalColor, lifecycleColor, ProjectBadge, UserChip } from "./ui";
 import { CountSlice, TimePoint, Granularity } from "@/lib/types";
 import { fmtBucket, fmtNum } from "@/lib/format";
 import { useFilters } from "@/lib/client/useFilters";
@@ -34,7 +34,7 @@ export function TrendChart({ points, granularity, loading }: { points: TimePoint
   const data = points.map((p) => ({ ...p, label: fmtBucket(p.bucket, g) }));
 
   return (
-    <Card className="p-5 col-span-12 animate-in">
+    <Card className="p-5 col-span-12 lg:col-span-6 animate-in">
       <SectionTitle
         title="Deletion Trend Over Time"
         subtitle={`${fmtNum(total)} deletions · spot spikes and unusual activity`}
@@ -92,7 +92,7 @@ export function TrendChart({ points, granularity, loading }: { points: TimePoint
 export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: boolean }) {
   const total = data.reduce((s, d) => s + d.count, 0);
   return (
-    <Card className="p-5 col-span-12 lg:col-span-4 animate-in">
+    <Card className="p-5 col-span-12 lg:col-span-6 animate-in">
       <SectionTitle title="Deletions by Lifecycle Status" subtitle="Page state when deleted" info="Lifecycle state at deletion: No Products Tagged (deleted pre-generation with 0 products), Yet to be Generated (status NULL, had products), Generated (never published), Unpublished & Deleted (published then unpublished). Reflects the global time range and filters at the top." />
       <div className="h-[240px] relative">
         {loading || total === 0 ? (
@@ -138,22 +138,25 @@ export function HBars({
 }: { title: string; subtitle: string; data: CountSlice[]; kind: "user" | "client"; loading?: boolean; colSpan?: string }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
-    <Card className={cn("p-5 col-span-12 animate-in", colSpan)}>
+    <Card className={cn("p-5 col-span-12 lg:col-span-6 animate-in", colSpan)}>
       <SectionTitle title={title} subtitle={subtitle} info={`Top ${kind === "user" ? "users who performed deletions" : "projects by deletion count"}, within the global time range and filters at the top. Scrolls if there are many.`} />
       {loading ? (
         <EmptyState message="Loading…" />
       ) : data.length === 0 ? (
         <EmptyState message="No data" />
       ) : (
-        <div className="max-h-[320px] space-y-2.5 overflow-y-auto pr-1 -mr-1">
+        <div className="max-h-[340px] space-y-3 overflow-y-auto pr-1 -mr-1">
           {data.map((d, i) => (
-            <div key={d.key} className="flex items-center gap-3">
-              <div className="w-[38%] min-w-0 text-xs">
-                {kind === "client" ? <ProjectBadge project={d.key} /> : <UserChip user={d.key} />}
+            <div key={d.key}>
+              {/* Label + count on one line — never overlaps the bar */}
+              <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
+                <span className="min-w-0 flex-1 truncate">
+                  {kind === "client" ? <ProjectBadge project={d.key} /> : <UserChip user={d.key} compact />}
+                </span>
+                <span className="shrink-0 font-semibold text-foreground tnum">{fmtNum(d.count)}</span>
               </div>
-              <div className="relative h-6 flex-1 overflow-hidden rounded-md bg-surface-2">
-                <div className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${(d.count / max) * 100}%`, background: categoricalColor(i), opacity: 0.9 }} />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-foreground tnum">{fmtNum(d.count)}</span>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
+                <div className="h-full rounded-full" style={{ width: `${(d.count / max) * 100}%`, background: categoricalColor(i) }} />
               </div>
             </div>
           ))}
