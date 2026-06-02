@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { X, Boxes, Activity, Trash2, Copy, ArrowLeft, Layers, Clock } from "lucide-react";
-import { UserChip, StatusPill, ProjectBadge, PageTypeChip, lifecycleColor } from "./ui";
+import { useEffect, useState } from "react";
+import { X, Boxes, Activity, Trash2, Copy, ArrowLeft, Layers, Clock, ChevronRight } from "lucide-react";
+import { UserChip, StatusPill, ProjectBadge, PageTypeChip } from "./ui";
 import { DeletionRecord, DeletionEvent } from "@/lib/types";
 import { fmtDateTime, fmtNum } from "@/lib/format";
 import { faviconForProject } from "@/lib/projects";
@@ -76,6 +76,8 @@ export function DetailDrawer({
 function EventDetail({
   event, onSelectRecord, onClose,
 }: { event: DeletionEvent; onSelectRecord: (r: DeletionRecord) => void; onClose: () => void }) {
+  const [active, setActive] = useState<string | null>(null);
+  const shown = active ? event.clusters.filter((c) => c.workflow_stage === active) : event.clusters;
   return (
     <>
       <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] p-5">
@@ -111,38 +113,46 @@ function EventDetail({
           </div>
         </div>
 
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-2">
-          Clusters ({event.count}) — click a chip to inspect
-        </div>
-        {/* Cluster chips, grouped by lifecycle status */}
-        <div className="space-y-3">
+        {/* Clickable lifecycle-status filters */}
+        <div className="flex flex-wrap items-center gap-1.5">
           {event.statuses.map((s) => (
-            <div key={s.key}>
-              <div className="mb-1.5"><StatusPill status={s.key} count={s.count} /></div>
-              <div className="flex flex-wrap gap-1.5">
-                {event.clusters.filter((c) => c.workflow_stage === s.key).map((c) => (
-                  <ClusterChip key={c.cluster_id} cluster={c} onClick={() => onSelectRecord(c)} />
-                ))}
+            <StatusPill
+              key={s.key}
+              status={s.key}
+              count={s.count}
+              onClick={() => setActive(active === s.key ? null : s.key)}
+              dimmed={!!active && active !== s.key}
+            />
+          ))}
+          {active && (
+            <button onClick={() => setActive(null)} className="ml-1 text-[11px] text-muted hover:text-foreground">Clear</button>
+          )}
+        </div>
+
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-2">
+          {active ? `${shown.length} of ${event.count}` : `Clusters (${event.count})`} — click a card to inspect
+        </div>
+        <div className="space-y-2">
+          {shown.map((c) => (
+            <button
+              key={c.cluster_id}
+              onClick={() => onSelectRecord(c)}
+              className="card-hover flex min-h-[76px] w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-surface-2 p-3 text-left transition-colors hover:border-[var(--border-strong)]"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-foreground" title={c.topic ?? c.cluster_name ?? ""}>{c.topic ?? c.cluster_name ?? c.cluster_id}</div>
+                <div className="truncate font-mono text-[11px] text-muted-2">{c.cluster_id}</div>
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <StatusPill status={c.workflow_stage} />
+                  <PageTypeChip type={c.page_type} />
+                </div>
               </div>
-            </div>
+              <ChevronRight size={16} className="shrink-0 text-muted-2" />
+            </button>
           ))}
         </div>
       </div>
     </>
-  );
-}
-
-function ClusterChip({ cluster: c, onClick }: { cluster: DeletionRecord; onClick: () => void }) {
-  const label = c.topic ?? c.cluster_name ?? c.cluster_id;
-  return (
-    <button
-      onClick={onClick}
-      title={`${label}\n${c.cluster_id}`}
-      className="inline-flex max-w-[210px] items-center gap-1.5 rounded-full border border-[var(--border)] bg-surface px-2.5 py-1 text-xs text-foreground transition-colors hover:border-[var(--border-strong)] hover:bg-surface-2 focus-ring"
-    >
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: lifecycleColor(c.workflow_stage) }} />
-      <span className="truncate">{label}</span>
-    </button>
   );
 }
 

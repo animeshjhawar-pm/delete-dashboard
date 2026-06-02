@@ -30,7 +30,7 @@ export function InfoDot({ text }: { text: string }) {
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-0 top-[calc(100%+6px)] z-50 w-60 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] p-2.5 text-[11px] font-normal leading-snug text-muted opacity-0 shadow-xl transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+        className="pointer-events-none absolute left-1/2 top-[calc(100%+8px)] z-50 w-60 max-w-[70vw] -translate-x-1/2 translate-y-1 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] p-2.5 text-left text-[11px] font-normal normal-case leading-snug text-muted opacity-0 shadow-xl transition-all duration-150 group-hover/info:translate-y-0 group-hover/info:opacity-100 group-focus-within/info:translate-y-0 group-focus-within/info:opacity-100"
       >
         {text}
       </span>
