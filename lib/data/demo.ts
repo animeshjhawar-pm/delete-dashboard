@@ -36,10 +36,11 @@ interface UniverseRow {
 }
 
 const PAGE_TYPES = ["service", "blog", "category"];
+// Every deletion is always attributed to a real user (no bots/automation).
 const USERS = [
   "ana.mehta@gushwork.ai", "ravi.kumar@gushwork.ai", "sara.lee@gushwork.ai",
-  "tom.becker@gushwork.ai", "priya.nair@gushwork.ai", "auto-cleanup@system",
-  "leo.martin@gushwork.ai", "ops-bot@system",
+  "tom.becker@gushwork.ai", "priya.nair@gushwork.ai", "leo.martin@gushwork.ai",
+  "hridya.das@gushwork.ai", "mudit.kumar@gushwork.ai",
 ];
 const STATUSES: (string | null)[] = [null, null, null, "generated", "generated", "generated"];
 

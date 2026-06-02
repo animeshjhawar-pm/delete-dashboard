@@ -31,12 +31,23 @@ export interface DeletionRecord {
 export interface Filters {
   from: string; // ISO start of range
   to: string; // ISO end of range
-  client?: string;
-  project?: string;
-  user?: string; // deleted_by
-  stage?: string; // lifecycle status
-  status?: string; // raw page_status
+  project?: string[]; // multi-select
+  user?: string[]; // multi-select (deleted_by)
+  stage?: string[]; // multi-select (lifecycle status)
   search?: string;
+}
+
+// A deletion "event" — one or more clusters deleted together (same timestamp
+// by the same user), with a per-lifecycle-status breakdown.
+export interface DeletionEvent {
+  key: string;
+  deleted_at: string;
+  deleted_by: string | null;
+  projects: string[];
+  project_domain: string | null; // when a single project, its domain (favicon)
+  count: number;
+  statuses: { key: string; count: number }[];
+  clusters: DeletionRecord[];
 }
 
 export type Granularity = "daily" | "weekly";
@@ -81,9 +92,7 @@ export interface DashboardPayload {
 }
 
 export interface FilterOptions {
-  clients: string[];
   projects: string[];
   users: string[];
   stages: string[];
-  statuses: string[];
 }

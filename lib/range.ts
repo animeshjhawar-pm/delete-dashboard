@@ -51,17 +51,22 @@ export function parseRange(sp: URLSearchParams): ParsedRange {
 }
 
 export function parseFilters(sp: URLSearchParams): Partial<Filters> {
-  const get = (k: string) => {
+  const str = (k: string) => {
     const v = sp.get(k);
     return v && v !== "all" && v !== "" ? v : undefined;
   };
+  // Multi-select values are comma-separated in the URL.
+  const multi = (k: string) => {
+    const v = sp.get(k);
+    if (!v) return undefined;
+    const arr = v.split(",").map((s) => s.trim()).filter(Boolean);
+    return arr.length ? arr : undefined;
+  };
   return {
-    client: get("client"),
-    project: get("project"),
-    user: get("user"),
-    stage: get("stage"),
-    status: get("status"),
-    search: get("search"),
+    project: multi("project"),
+    user: multi("user"),
+    stage: multi("stage"),
+    search: str("search"),
   };
 }
 

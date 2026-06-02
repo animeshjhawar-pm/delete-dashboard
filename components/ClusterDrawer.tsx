@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Boxes, Activity, FileText, Trash2, Copy } from "lucide-react";
-import { Badge, ProjectBadge, UserChip } from "./ui";
+import { X, Boxes, Activity, Trash2, Copy } from "lucide-react";
+import { Badge, UserChip } from "./ui";
 import { DeletionRecord } from "@/lib/types";
-import { fmtDateTime, fmtNum } from "@/lib/format";
+import { fmtDateTime } from "@/lib/format";
 import { faviconForProject } from "@/lib/projects";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -97,17 +97,10 @@ export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | nu
             <Row label="Deleted At"><span className="font-medium text-[var(--critical)]">{fmtDateTime(r.deleted_at)}</span></Row>
           </Section>
 
-          <Section icon={<FileText size={13} />} title="Workflow Snapshot Before Deletion">
-            <Row label="Page Status">{r.page_status ?? <span className="italic text-muted-2">null</span>}</Row>
-            <Row label="Product Count"><span className="tnum">{r.product_count == null ? "—" : fmtNum(r.product_count)}</span></Row>
-            <Row label="Associated Page ID">{r.page_id ? <Mono>{r.page_id}</Mono> : "—"}</Row>
-            <Row label="Last Modified By"><UserChip user={r.last_modified_by ?? null} /></Row>
-          </Section>
-
           <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
             <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
             <Row label="Lifecycle Status">{r.workflow_stage}</Row>
-            <Row label="Deletion Notes"><span className="text-muted">{r.deletion_notes ?? "—"}</span></Row>
+            <Row label="Page Type">{r.page_type ?? "—"}</Row>
           </Section>
         </div>
       </aside>

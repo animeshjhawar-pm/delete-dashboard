@@ -4,6 +4,7 @@ import { Trash2, Percent, Users, FileText, ArrowUpRight, ArrowDownRight } from "
 import { Card, Skeleton } from "./ui";
 import { KpiPayload, CountSlice } from "@/lib/types";
 import { fmtNum, fmtPct } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 function Delta({ current, prev }: { current: number; prev: number }) {
   if (!prev) return <span className="text-[11px] text-muted-2">vs 0 prev</span>;
@@ -21,19 +22,19 @@ function Delta({ current, prev }: { current: number; prev: number }) {
 }
 
 function Kpi({
-  icon, label, value, sub,
-}: { icon: React.ReactNode; label: string; value: React.ReactNode; sub?: React.ReactNode }) {
+  icon, label, value, sub, wrap,
+}: { icon: React.ReactNode; label: string; value: React.ReactNode; sub?: React.ReactNode; wrap?: boolean }) {
   return (
     <Card className="card-hover p-4 sm:p-5 flex flex-col gap-3 min-h-[118px] animate-in">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-muted">{label}</span>
         {/* All KPI icons share the same neutral chip treatment for consistency. */}
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-muted">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
           {icon}
         </span>
       </div>
       <div className="mt-auto">
-        <div className="text-2xl font-semibold tracking-tight text-foreground tnum truncate">{value}</div>
+        <div className={cn("font-semibold tracking-tight text-foreground tnum", wrap ? "text-lg leading-tight" : "text-2xl truncate")}>{value}</div>
         {sub && <div className="mt-1 text-xs text-muted truncate">{sub}</div>}
       </div>
     </Card>
@@ -76,8 +77,9 @@ export function KpiCards({
       <Kpi
         icon={<FileText size={16} />}
         label="Top Lifecycle Status"
-        value={topStatus ? <span className="text-base font-semibold">{topStatus.key}</span> : "—"}
-        sub={topStatus ? `${fmtPct(topStatus.pct)} of deletions` : undefined}
+        wrap
+        value={topStatus ? topStatus.key : "—"}
+        sub={topStatus ? `${fmtNum(topStatus.count)} · ${fmtPct(topStatus.pct)} of deletions` : undefined}
       />
     </div>
   );

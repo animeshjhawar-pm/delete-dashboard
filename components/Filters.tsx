@@ -1,7 +1,8 @@
 "use client";
 
 import { Download, X, SlidersHorizontal } from "lucide-react";
-import { Button, Select, Badge } from "./ui";
+import { Button, Badge, ProjectBadge, UserChip } from "./ui";
+import { SingleSelect, MultiSelect } from "./Dropdown";
 import { useFilters } from "@/lib/client/useFilters";
 import { FilterOptions } from "@/lib/types";
 import { RANGE_PRESETS } from "@/lib/range";
@@ -21,11 +22,17 @@ function toDateInput(iso?: string) {
 export function Filters({
   options, exportHref, totalMatched,
 }: { options?: FilterOptions; exportHref: string; totalMatched?: number }) {
-  const { params, get, set, setMany, activeCount, reset } = useFilters();
-  const range = get("range", "7d");
+  const { params, set, getMulti, toggleMulti, setMulti, activeCount, reset } = useFilters();
+  const range = params.range || "7d";
 
-  const opt = (vals: string[] = []) => vals.map((v) => ({ value: v, label: v }));
-  const statusOptions = (options?.statuses ?? []).map((v) => ({ value: v, label: v }));
+  const projectOpts = (options?.projects ?? []).map((v) => ({ value: v, label: v, render: <ProjectBadge project={v} /> }));
+  const userOpts = (options?.users ?? []).map((v) => ({ value: v, label: v, render: <UserChip user={v} /> }));
+  const stageOpts = (options?.stages ?? []).map((v) => ({ value: v, label: v }));
+
+  const projSel = getMulti("project"), userSel = getMulti("user"), stageSel = getMulti("stage");
+  const projLabel = projSel.length ? "Projects" : "All Projects";
+  const userLabel = userSel.length ? "Users" : "All Users";
+  const stageLabel = stageSel.length ? "Lifecycle" : "All Lifecycle Statuses";
 
   return (
     <div className="card p-3 sm:p-4">
@@ -35,12 +42,8 @@ export function Filters({
           <span className="hidden sm:inline">Global Filters</span>
         </div>
 
-        <Select
-          className="w-[150px]"
-          value={range}
-          onChange={(v) => set("range", v)}
-          options={RANGE_OPTIONS}
-        />
+        {/* Time range — single select */}
+        <SingleSelect value={range} onChange={(v) => set("range", v)} options={RANGE_OPTIONS} width={170} className="w-[150px]" />
 
         {range === "custom" && (
           <div className="flex items-center gap-1.5">
@@ -62,10 +65,10 @@ export function Filters({
 
         <div className="mx-1 hidden h-6 w-px bg-[var(--border)] sm:block" />
 
-        <Select className="w-[170px]" value={get("project")} onChange={(v) => set("project", v)} placeholder="All Projects" options={opt(options?.projects)} />
-        <Select className="w-[160px]" value={get("user")} onChange={(v) => set("user", v)} placeholder="All Users" options={opt(options?.users)} />
-        <Select className="w-[190px]" value={get("stage")} onChange={(v) => set("stage", v)} placeholder="All Lifecycle Statuses" options={opt(options?.stages)} />
-        <Select className="w-[140px]" value={get("status")} onChange={(v) => set("status", v)} placeholder="All Statuses" options={statusOptions} />
+        {/* Multi-selects */}
+        <MultiSelect label={projLabel} selected={projSel} onToggle={(v) => toggleMulti("project", v)} onClear={() => setMulti("project", [])} options={projectOpts} searchable width={260} />
+        <MultiSelect label={userLabel} selected={userSel} onToggle={(v) => toggleMulti("user", v)} onClear={() => setMulti("user", [])} options={userOpts} searchable width={250} />
+        <MultiSelect label={stageLabel} selected={stageSel} onToggle={(v) => toggleMulti("stage", v)} onClear={() => setMulti("stage", [])} options={stageOpts} width={230} />
 
         <div className="ml-auto flex items-center gap-2">
           {typeof totalMatched === "number" && (

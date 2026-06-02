@@ -5,11 +5,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Keys that participate in the dashboard query (URL is the single source of truth).
 export const FILTER_KEYS = [
-  "range", "from", "to", "client", "project", "user", "stage",
-  "status", "search", "granularity",
+  "range", "from", "to", "project", "user", "stage", "search", "granularity",
 ] as const;
 
 export type FilterKey = (typeof FILTER_KEYS)[number];
+
+// Comma-separated multi-select filters.
+const MULTI_KEYS = ["project", "user", "stage"] as const;
+type MultiKey = (typeof MULTI_KEYS)[number];
 
 export function useFilters() {
   const sp = useSearchParams();
@@ -41,17 +44,32 @@ export function useFilters() {
 
   const set = useCallback((k: FilterKey, v: string | undefined) => setMany({ [k]: v }), [setMany]);
 
-  // The query string the dashboard/audit/export endpoints consume.
+  // ---- multi-select helpers ----
+  const getMulti = useCallback(
+    (k: MultiKey): string[] => (params[k] ? params[k].split(",").filter(Boolean) : []),
+    [params],
+  );
+  const setMulti = useCallback(
+    (k: MultiKey, values: string[]) => setMany({ [k]: values.length ? values.join(",") : undefined }),
+    [setMany],
+  );
+  const toggleMulti = useCallback(
+    (k: MultiKey, value: string) => {
+      const cur = params[k] ? params[k].split(",").filter(Boolean) : [];
+      const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+      setMulti(k, next);
+    },
+    [params, setMulti],
+  );
+
   const queryString = useMemo(() => {
     const q = new URLSearchParams();
-    for (const k of ["range", "from", "to", "client", "project", "user", "stage", "status", "search", "granularity"]) {
-      if (params[k]) q.set(k, params[k]);
-    }
+    for (const k of FILTER_KEYS) if (params[k]) q.set(k, params[k]);
     return q.toString();
   }, [params]);
 
   const activeCount = useMemo(
-    () => ["client", "project", "user", "stage", "status"].filter((k) => params[k]).length,
+    () => MULTI_KEYS.reduce((n, k) => n + (params[k] ? params[k].split(",").filter(Boolean).length : 0), 0),
     [params],
   );
 
@@ -59,5 +77,5 @@ export function useFilters() {
     router.replace(`${pathname}?range=${params.range || "7d"}`, { scroll: false });
   }, [router, pathname, params.range]);
 
-  return { params, get, set, setMany, queryString, activeCount, reset };
+  return { params, get, set, setMany, getMulti, setMulti, toggleMulti, queryString, activeCount, reset };
 }

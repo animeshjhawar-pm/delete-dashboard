@@ -8,18 +8,14 @@ const DAY = 86400000;
 
 export function applyFilters(records: DeletionRecord[], f: Partial<Filters>): DeletionRecord[] {
   const search = f.search?.trim().toLowerCase();
+  const has = (arr: string[] | undefined, v: string | null) => !arr?.length || (v != null && arr.includes(v));
   return records.filter((r) => {
-    if (f.client && r.client !== f.client) return false;
-    if (f.project && r.project !== f.project) return false;
-    if (f.user && r.deleted_by !== f.user) return false;
-    if (f.stage && r.workflow_stage !== f.stage) return false;
-    if (f.status !== undefined && f.status !== "") {
-      const s = r.page_status ?? "__null__";
-      if (f.status === "__null__" ? r.page_status != null : s !== f.status) return false;
-    }
+    if (!has(f.project, r.project)) return false;
+    if (!has(f.user, r.deleted_by)) return false;
+    if (!has(f.stage, r.workflow_stage)) return false;
     if (search) {
       const hay = [
-        r.cluster_id, r.cluster_name, r.topic, r.client, r.project, r.deleted_by,
+        r.cluster_id, r.cluster_name, r.topic, r.project, r.deleted_by,
         r.workflow_stage, r.page_type,
       ].filter(Boolean).join(" ").toLowerCase();
       if (!hay.includes(search)) return false;
@@ -32,12 +28,37 @@ export function buildFilterOptions(records: DeletionRecord[]): FilterOptions {
   const uniq = (vals: (string | null)[]) =>
     Array.from(new Set(vals.filter((v): v is string => !!v))).sort((a, b) => a.localeCompare(b));
   return {
-    clients: uniq(records.map((r) => r.client)),
     projects: uniq(records.map((r) => r.project)),
     users: uniq(records.map((r) => r.deleted_by)),
     stages: uniq(records.map((r) => r.workflow_stage)),
-    statuses: uniq(records.map((r) => r.page_status)),
   };
+}
+
+// Group deletions into events: clusters removed at the same instant by the same
+// user form one log entry, with a per-lifecycle-status breakdown. Newest first.
+export function groupEvents(records: DeletionRecord[]): import("@/lib/types").DeletionEvent[] {
+  const map = new Map<string, DeletionRecord[]>();
+  for (const r of records) {
+    const key = `${r.deleted_at}|${r.deleted_by ?? ""}`;
+    (map.get(key) ?? map.set(key, []).get(key)!).push(r);
+  }
+  const events = Array.from(map, ([key, clusters]) => {
+    const projects = Array.from(new Set(clusters.map((c) => c.project).filter((p): p is string => !!p)));
+    const statusCounts = new Map<string, number>();
+    for (const c of clusters) statusCounts.set(c.workflow_stage, (statusCounts.get(c.workflow_stage) ?? 0) + 1);
+    const statuses = Array.from(statusCounts, ([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count);
+    return {
+      key,
+      deleted_at: clusters[0].deleted_at,
+      deleted_by: clusters[0].deleted_by,
+      projects,
+      project_domain: projects.length === 1 ? (clusters.find((c) => c.project_domain)?.project_domain ?? null) : null,
+      count: clusters.length,
+      statuses,
+      clusters,
+    };
+  });
+  return events.sort((a, b) => +new Date(b.deleted_at) - +new Date(a.deleted_at));
 }
 
 function slices(records: DeletionRecord[], key: (r: DeletionRecord) => string | null, limit?: number): CountSlice[] {
