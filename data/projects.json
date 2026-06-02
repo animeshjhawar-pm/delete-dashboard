@@ -1,0 +1,110 @@
+[
+  {
+    "id": "27ede6f7-8e5c-4a7f-8701-4e021ce101e6",
+    "name": "AMS Retail Solutions",
+    "url": "https://amsretail.com/",
+    "domain": "amsretail.com"
+  },
+  {
+    "id": "c98869ae-30dc-49a6-943f-05dadad25fa1",
+    "name": "Criterion Precision Machining",
+    "url": "https://criterionprecision.com/",
+    "domain": "criterionprecision.com"
+  },
+  {
+    "id": "5c4ba424-3d52-4f39-aae6-f61d27cf84ef",
+    "name": "EvaSpeaks",
+    "url": "https://evaspeaks.ai/",
+    "domain": "evaspeaks.ai"
+  },
+  {
+    "id": "84f65e33-e460-4c6f-b5f2-25dd6b879b77",
+    "name": "Optical Scientific",
+    "url": "https://www.opticalscientific.com/",
+    "domain": "opticalscientific.com"
+  },
+  {
+    "id": "8ef9097c-c2c0-4ce2-a9bc-25eca9fb7f68",
+    "name": "Prod Test - TriNu Powder Coating",
+    "url": "https://www.trinupowdercoating.com/home.html",
+    "domain": "test-trinupowdercoating.com"
+  },
+  {
+    "id": "4304ac13-f3c3-4921-9e52-d7a49741f0bf",
+    "name": "Protectt.ai",
+    "url": "https://protectt.ai/",
+    "domain": "protectt.ai"
+  },
+  {
+    "id": "0674c32e-d949-405d-96d0-a29234c88c56",
+    "name": "QRstuff",
+    "url": "https://www.qrstuff.com/",
+    "domain": "qrstuff.com"
+  },
+  {
+    "id": "8979cd83-dafb-435e-b0f4-50897bb3d6bc",
+    "name": "Respect Manufacturing",
+    "url": "https://www.respectmanufacturing.com/",
+    "domain": "respectmanufacturing.com"
+  },
+  {
+    "id": "39866524-a97a-4e02-9bc5-644076d9c8c5",
+    "name": "Shield and Supply",
+    "url": "https://shieldandsupply.com/",
+    "domain": "shieldandsupply.com"
+  },
+  {
+    "id": "690aec5c-b7ce-4e76-8a33-66c67a552f59",
+    "name": "Sylus",
+    "url": "https://www.sylus.ai/",
+    "domain": "sylus.ai"
+  },
+  {
+    "id": "f1b70120-58c7-4240-a3af-e9bc66d5a063",
+    "name": "Tect",
+    "url": "https://www.tect.com/earthsmart",
+    "domain": "tect.com"
+  },
+  {
+    "id": "1188aeb4-c8d8-4a19-9eca-86a90ded6b67",
+    "name": "Top Lead",
+    "url": "https://www.toplead.io/",
+    "domain": "toplead.io"
+  },
+  {
+    "id": "885d612b-02ff-45ce-b06c-b5b51c24a570",
+    "name": "TriNu Powder Coating",
+    "url": "https://trinupowdercoating.com/",
+    "domain": "trinupowdercoating.com"
+  },
+  {
+    "id": "project_id",
+    "name": "name",
+    "url": "url",
+    "domain": "root_domain"
+  },
+  {
+    "id": "14adf16e-d373-4850-9a27-3b5bced99eeb",
+    "name": "Camber Credit",
+    "url": "https://www.cambercredit.com/",
+    "domain": "cambercredit.com"
+  },
+  {
+    "id": "9a5913ff-ee71-47d1-9f20-5893bc110182",
+    "name": "Datateer",
+    "url": "https://www.datateer.com/",
+    "domain": "datateer.com"
+  },
+  {
+    "id": "9793cdea-4e73-4e42-a2c5-6d1085b0d624",
+    "name": "Harmoni",
+    "url": "https://harmoni.io/",
+    "domain": "harmoni.io"
+  },
+  {
+    "id": "f81cf3a0-bb08-47ac-8cf8-5cb2bcd9d1f4",
+    "name": "Ikon Search",
+    "url": "https://ikonsearch.com/",
+    "domain": "ikonsearch.com"
+  }
+]

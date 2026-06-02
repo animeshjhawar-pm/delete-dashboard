@@ -1,0 +1,89 @@
+"use client";
+
+import { Download, X, SlidersHorizontal } from "lucide-react";
+import { Button, Select, Badge } from "./ui";
+import { useFilters } from "@/lib/client/useFilters";
+import { FilterOptions } from "@/lib/types";
+import { RANGE_PRESETS } from "@/lib/range";
+
+const RANGE_OPTIONS = [
+  ...Object.entries(RANGE_PRESETS).map(([value, v]) => ({ value, label: v.label })),
+  { value: "custom", label: "Custom Range" },
+];
+
+function toDateInput(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
+export function Filters({
+  options, exportHref, totalMatched,
+}: { options?: FilterOptions; exportHref: string; totalMatched?: number }) {
+  const { params, get, set, setMany, activeCount, reset } = useFilters();
+  const range = get("range", "7d");
+
+  const opt = (vals: string[] = []) => vals.map((v) => ({ value: v, label: v }));
+  const statusOptions = (options?.statuses ?? []).map((v) => ({ value: v, label: v }));
+
+  return (
+    <div className="card p-3 sm:p-4">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted">
+          <SlidersHorizontal size={14} />
+          <span className="hidden sm:inline">Filters</span>
+        </div>
+
+        <Select
+          className="w-[150px]"
+          value={range}
+          onChange={(v) => set("range", v)}
+          options={RANGE_OPTIONS}
+        />
+
+        {range === "custom" && (
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={toDateInput(params.from) || toDateInput(new Date(Date.now() - 7 * 864e5).toISOString())}
+              onChange={(e) => set("from", e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+              className="h-9 rounded-lg border border-[var(--border)] bg-surface px-2.5 text-sm text-foreground focus-ring"
+            />
+            <span className="text-muted-2 text-xs">to</span>
+            <input
+              type="date"
+              value={toDateInput(params.to) || toDateInput(new Date().toISOString())}
+              onChange={(e) => set("to", e.target.value ? new Date(e.target.value + "T23:59:59").toISOString() : undefined)}
+              className="h-9 rounded-lg border border-[var(--border)] bg-surface px-2.5 text-sm text-foreground focus-ring"
+            />
+          </div>
+        )}
+
+        <div className="mx-1 hidden h-6 w-px bg-[var(--border)] sm:block" />
+
+        <Select className="w-[170px]" value={get("project")} onChange={(v) => set("project", v)} placeholder="All Projects" options={opt(options?.projects)} />
+        <Select className="w-[160px]" value={get("user")} onChange={(v) => set("user", v)} placeholder="All Users" options={opt(options?.users)} />
+        <Select className="w-[170px]" value={get("reason")} onChange={(v) => set("reason", v)} placeholder="All Reasons" options={opt(options?.reasons)} />
+        <Select className="w-[150px]" value={get("stage")} onChange={(v) => set("stage", v)} placeholder="All Stages" options={opt(options?.stages)} />
+        <Select className="w-[140px]" value={get("status")} onChange={(v) => set("status", v)} placeholder="All Statuses" options={statusOptions} />
+
+        <div className="ml-auto flex items-center gap-2">
+          {typeof totalMatched === "number" && (
+            <Badge tone="muted" className="tnum">{totalMatched.toLocaleString()} matched</Badge>
+          )}
+          {activeCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={reset} className="gap-1">
+              <X size={13} /> Clear ({activeCount})
+            </Button>
+          )}
+          <a href={exportHref} download>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Download size={14} /> <span className="hidden sm:inline">Export CSV</span>
+            </Button>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

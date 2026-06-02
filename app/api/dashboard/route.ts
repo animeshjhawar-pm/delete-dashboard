@@ -1,0 +1,57 @@
+import { NextRequest, NextResponse } from "next/server";
+import { loadWindow } from "@/lib/data/source";
+import { parseRange, parseFilters, parseGranularity } from "@/lib/range";
+import {
+  applyFilters, buildFilterOptions, computeKpis, trend, autoGranularity,
+  byReason, byStage, byUser, byClient, heatmap, recent, insights,
+} from "@/lib/data/aggregate";
+import { DashboardPayload } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function GET(req: NextRequest) {
+  const sp = req.nextUrl.searchParams;
+  const range = parseRange(sp);
+  const filters = parseFilters(sp);
+  const granularity = parseGranularity(sp) ?? autoGranularity(range.from, range.to);
+
+  const [cur, prev] = await Promise.all([
+    loadWindow(range.from, range.to),
+    loadWindow(range.prevFrom, range.prevTo),
+  ]);
+
+  // Filter options come from the *unfiltered* window so the user can always
+  // widen a selection; everything else reacts to the active filters.
+  const filterOptions = buildFilterOptions(cur.records);
+
+  // project name -> domain, for favicons across charts/feed/table.
+  const projectDomains: Record<string, string> = {};
+  for (const r of cur.records) {
+    if (r.project && r.project_domain && !projectDomains[r.project]) {
+      projectDomains[r.project] = r.project_domain;
+    }
+  }
+  const filtered = applyFilters(cur.records, filters);
+  const prevFiltered = applyFilters(prev.records, filters);
+
+  const payload: DashboardPayload = {
+    source: cur.source,
+    kpis: computeKpis(filtered, cur.createdInWindow, prevFiltered.length),
+    trend: { granularity, points: trend(filtered, range.from, range.to, granularity) },
+    byStage: byStage(filtered),
+    byReason: byReason(filtered),
+    byUser: byUser(filtered),
+    byClient: byClient(filtered),
+    heatmap: heatmap(filtered),
+    recent: recent(filtered),
+    insights: insights(filtered, prevFiltered, range.label),
+    filterOptions,
+    totalMatched: filtered.length,
+    projectDomains,
+  };
+
+  return NextResponse.json(payload, {
+    headers: { "Cache-Control": "no-store" },
+  });
+}
