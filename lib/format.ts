@@ -31,11 +31,8 @@ export function fmtRelative(iso: string | null | undefined): string {
   return formatDistanceToNowStrict(d, { addSuffix: true });
 }
 
-export function fmtBucket(iso: string, granularity: "hourly" | "daily" | "weekly"): string {
-  const d = new Date(iso);
-  if (granularity === "hourly") return format(d, "MMM d, HH:mm");
-  if (granularity === "weekly") return format(d, "MMM d");
-  return format(d, "MMM d");
+export function fmtBucket(iso: string, _granularity: "daily" | "weekly"): string {
+  return format(new Date(iso), "MMM d");
 }
 
 export function initials(s: string | null | undefined): string {

@@ -61,7 +61,6 @@ export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | nu
             <div className="min-w-0">
               <h2 className="truncate text-base font-semibold text-foreground">{r.cluster_name ?? r.cluster_id}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge tone="accent">{r.deletion_reason}</Badge>
                 <Badge tone="muted">{r.workflow_stage}</Badge>
               </div>
             </div>
@@ -107,7 +106,7 @@ export function ClusterDrawer({ record, onClose }: { record: DeletionRecord | nu
 
           <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
             <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
-            <Row label="Deletion Reason">{r.deletion_reason}</Row>
+            <Row label="Lifecycle Status">{r.workflow_stage}</Row>
             <Row label="Deletion Notes"><span className="text-muted">{r.deletion_notes ?? "—"}</span></Row>
           </Section>
         </div>

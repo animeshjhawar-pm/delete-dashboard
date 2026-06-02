@@ -1,5 +1,5 @@
 import { DeletionRecord } from "@/lib/types";
-import { deriveReason, deriveLifecycle } from "./derive";
+import { deriveLifecycle } from "./derive";
 import { allProjects } from "@/lib/projects";
 
 // Deterministic PRNG so the demo dataset is stable across reloads/builds.
@@ -30,7 +30,6 @@ interface UniverseRow {
   page_id: string | null;
   last_modified_by: string | null;
   deletion_notes: string | null;
-  deletion_reason_raw: null;
   last_published_at: string | null;
   last_unpublished_at: string | null;
 }
@@ -116,7 +115,6 @@ function buildUniverse(now: number): UniverseRow[] {
       last_modified_by: USERS[Math.floor(rng() * USERS.length)],
       deletion_notes:
         deleted && rng() < 0.25 ? "Flagged during routine catalog QA sweep." : null,
-      deletion_reason_raw: null,
       last_published_at: lastPub ? new Date(lastPub).toISOString() : null,
       last_unpublished_at: lastUnpub ? new Date(lastUnpub).toISOString() : null,
     });
@@ -143,7 +141,6 @@ export function fetchDeletionsDemo(fromISO: string, toISO: string): DeletionReco
       const rec = { ...r, deleted_at: r.deleted_at! };
       return {
         ...rec,
-        deletion_reason: deriveReason(rec),
         workflow_stage: deriveLifecycle(rec),
       };
     })

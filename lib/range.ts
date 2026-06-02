@@ -59,7 +59,6 @@ export function parseFilters(sp: URLSearchParams): Partial<Filters> {
     client: get("client"),
     project: get("project"),
     user: get("user"),
-    reason: get("reason"),
     stage: get("stage"),
     status: get("status"),
     search: get("search"),

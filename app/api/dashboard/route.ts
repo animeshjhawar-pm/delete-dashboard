@@ -3,7 +3,7 @@ import { loadWindow } from "@/lib/data/source";
 import { parseRange, parseFilters, parseGranularity } from "@/lib/range";
 import {
   applyFilters, buildFilterOptions, computeKpis, trend, autoGranularity,
-  byReason, byStage, byUser, byClient, heatmap, recent, insights,
+  byStage, byUser, byClient, insights,
 } from "@/lib/data/aggregate";
 import { DashboardPayload } from "@/lib/types";
 
@@ -40,11 +40,8 @@ export async function GET(req: NextRequest) {
     kpis: computeKpis(filtered, cur.createdInWindow, prevFiltered.length),
     trend: { granularity, points: trend(filtered, range.from, range.to, granularity) },
     byStage: byStage(filtered),
-    byReason: byReason(filtered),
     byUser: byUser(filtered),
     byClient: byClient(filtered),
-    heatmap: heatmap(filtered),
-    recent: recent(filtered, 12),
     insights: insights(filtered, prevFiltered, range.label),
     filterOptions,
     totalMatched: filtered.length,

@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Keys that participate in the dashboard query (URL is the single source of truth).
 export const FILTER_KEYS = [
-  "range", "from", "to", "client", "project", "user", "reason", "stage",
+  "range", "from", "to", "client", "project", "user", "stage",
   "status", "search", "granularity",
 ] as const;
 
@@ -44,14 +44,14 @@ export function useFilters() {
   // The query string the dashboard/audit/export endpoints consume.
   const queryString = useMemo(() => {
     const q = new URLSearchParams();
-    for (const k of ["range", "from", "to", "client", "project", "user", "reason", "stage", "status", "search", "granularity"]) {
+    for (const k of ["range", "from", "to", "client", "project", "user", "stage", "status", "search", "granularity"]) {
       if (params[k]) q.set(k, params[k]);
     }
     return q.toString();
   }, [params]);
 
   const activeCount = useMemo(
-    () => ["client", "project", "user", "reason", "stage", "status"].filter((k) => params[k]).length,
+    () => ["client", "project", "user", "stage", "status"].filter((k) => params[k]).length,
     [params],
   );
 

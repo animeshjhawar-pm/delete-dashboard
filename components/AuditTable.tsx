@@ -25,7 +25,6 @@ const COLS: Col[] = [
   { key: "deleted_by", label: "Deleted By", sortable: true, render: (r) => <UserChip user={r.deleted_by} /> },
   { key: "workflow_stage", label: "Lifecycle", sortable: true, render: (r) => <Badge tone="muted">{r.workflow_stage}</Badge> },
   { key: "page_status", label: "Status", sortable: true, render: (r) => <span className="text-muted">{r.page_status ?? <span className="text-muted-2 italic">null</span>}</span> },
-  { key: "deletion_reason", label: "Reason", sortable: true, render: (r) => <Badge tone="accent">{r.deletion_reason}</Badge> },
   { key: "product_count", label: "Products", sortable: true, className: "text-right", render: (r) => <span className="tnum text-muted">{r.product_count ?? "—"}</span> },
   { key: "created_at", label: "Created", sortable: true, render: (r) => <span className="tnum text-muted-2">{fmtDate(r.created_at)}</span> },
 ];
@@ -96,7 +95,7 @@ export function AuditTable({
   return (
     <Card className="col-span-12 animate-in overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 p-5 pb-3">
-        <SectionTitle title="Recent Deletions · Audit Log" subtitle={`${fmtNum(total)} deleted clusters · newest first · click a row to investigate`} />
+        <SectionTitle title="Recent Deletions · Audit Log" subtitle={`${fmtNum(total)} deleted clusters · newest first · click a row to investigate`} info="The full deletion log, newest first. It inherits the global filters at the top; the search box below further narrows within them (clusters, projects, users, keywords)." />
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-2" />

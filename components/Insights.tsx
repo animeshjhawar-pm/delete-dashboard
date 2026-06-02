@@ -1,12 +1,12 @@
 "use client";
 
-import { Lightbulb, TrendingUp, Layers, Tag, User, Building2, Info, AlertTriangle } from "lucide-react";
+import { Lightbulb, TrendingUp, Layers, User, Building2, Info, AlertTriangle } from "lucide-react";
 import { Card, SectionTitle, Skeleton } from "./ui";
 import { Insight } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 const ICONS: Record<Insight["kind"], React.ComponentType<{ size?: number }>> = {
-  trend: TrendingUp, stage: Layers, reason: Tag, user: User, client: Building2, info: Info,
+  trend: TrendingUp, stage: Layers, user: User, client: Building2, info: Info,
 };
 
 export function InsightsPanel({ insights, loading }: { insights?: Insight[]; loading?: boolean }) {

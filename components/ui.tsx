@@ -15,15 +15,25 @@ export function Card({ className, children, ...props }: React.HTMLAttributes<HTM
 }
 
 export function InfoDot({ text }: { text: string }) {
+  // Real hover/focus tooltip (native title was unreliable). Shown via CSS on
+  // group-hover and on keyboard focus for accessibility.
   return (
-    <span
-      className="inline-grid h-4 w-4 cursor-help place-items-center rounded-full text-muted-2 hover:text-foreground"
-      title={text}
-      aria-label={text}
-    >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
-      </svg>
+    <span className="group/info relative inline-flex">
+      <button
+        type="button"
+        aria-label={text}
+        className="inline-grid h-4 w-4 cursor-help place-items-center rounded-full text-muted-2 outline-none transition-colors hover:text-foreground focus-visible:text-foreground"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
+        </svg>
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-[calc(100%+6px)] z-50 w-60 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] p-2.5 text-[11px] font-normal leading-snug text-muted opacity-0 shadow-xl transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+      >
+        {text}
+      </span>
     </span>
   );
 }

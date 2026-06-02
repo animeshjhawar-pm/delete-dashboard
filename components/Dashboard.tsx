@@ -5,7 +5,7 @@ import { setProjectDomains } from "@/lib/client/domains";
 import { Header } from "./Header";
 import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
-import { TrendChart, StageDonut, ReasonBar, HBars } from "./Charts";
+import { TrendChart, StageDonut, HBars } from "./Charts";
 import { InsightsPanel } from "./Insights";
 import { AuditTable } from "./AuditTable";
 import { ClusterDrawer } from "./ClusterDrawer";
@@ -60,9 +60,8 @@ export function Dashboard() {
         <section className="grid grid-cols-12 gap-4">
           <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
           <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
-          <ReasonBar data={data?.byReason ?? []} loading={loading && !data} />
-          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} />
-          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} />
+          <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-4" />
+          <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} colSpan="lg:col-span-4" />
         </section>
 
         {/* Insights & Alerts — last section */}

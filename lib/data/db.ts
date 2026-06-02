@@ -1,6 +1,6 @@
 import { Pool, type PoolConfig } from "pg";
 import { DeletionRecord } from "@/lib/types";
-import { deriveReason, deriveLifecycle } from "./derive";
+import { deriveLifecycle } from "./derive";
 
 // ---------------------------------------------------------------------------
 // Connection
@@ -235,13 +235,11 @@ function normalizeRow(r: Record<string, unknown>): DeletionRecord {
     page_id: r.page_id == null ? null : String(r.page_id),
     last_modified_by: r.deleted_by == null ? null : String(r.deleted_by),
     deletion_notes: null, // no dedicated notes column in this schema
-    deletion_reason_raw: null as string | null,
     last_published_at: toISO(r.last_published_at),
     last_unpublished_at: toISO(r.last_unpublished_at),
   };
   return {
     ...base,
-    deletion_reason: deriveReason(base),
     workflow_stage: deriveLifecycle(base),
   };
 }

@@ -16,7 +16,6 @@ export interface DeletionRecord {
   page_id?: string | null;
   last_modified_by?: string | null;
   deletion_notes?: string | null;
-  deletion_reason_raw?: string | null;
   // Project enrichment (from projects join) — powers favicons & context
   project_domain?: string | null;
   topic?: string | null;
@@ -24,9 +23,8 @@ export interface DeletionRecord {
   // Publish lifecycle (from processes history)
   last_published_at?: string | null;
   last_unpublished_at?: string | null;
-  // Derived
-  deletion_reason: string; // canonical reason (see derive.ts)
-  workflow_stage: string; // canonical stage (see derive.ts)
+  // Derived single lifecycle status (see derive.ts)
+  workflow_stage: string;
 }
 
 export interface Filters {
@@ -35,21 +33,18 @@ export interface Filters {
   client?: string;
   project?: string;
   user?: string; // deleted_by
-  reason?: string;
-  stage?: string;
-  status?: string; // page_status
+  stage?: string; // lifecycle status
+  status?: string; // raw page_status
   search?: string;
 }
 
-export type Granularity = "hourly" | "daily" | "weekly";
+export type Granularity = "daily" | "weekly";
 
 export interface KpiPayload {
   totalDeleted: number;
   deletionRate: number | null; // % deleted vs created in same window (null if not computable)
   createdInWindow: number;
   uniqueUsers: number;
-  topReason: { reason: string; count: number; pct: number } | null;
-  topClient: { client: string; count: number; pct: number } | null;
   prevTotalDeleted: number; // previous equivalent window, for delta
 }
 
@@ -64,15 +59,9 @@ export interface CountSlice {
   pct: number;
 }
 
-export interface HeatCell {
-  stage: string;
-  reason: string;
-  count: number;
-}
-
 export interface Insight {
   id: string;
-  kind: "trend" | "stage" | "reason" | "user" | "client" | "info";
+  kind: "trend" | "stage" | "user" | "client" | "info";
   severity: "info" | "warning" | "critical";
   title: string;
 }
@@ -82,11 +71,8 @@ export interface DashboardPayload {
   kpis: KpiPayload;
   trend: { granularity: Granularity; points: TimePoint[] };
   byStage: CountSlice[];
-  byReason: CountSlice[];
   byUser: CountSlice[];
   byClient: CountSlice[];
-  heatmap: { stages: string[]; reasons: string[]; cells: HeatCell[] };
-  recent: DeletionRecord[];
   insights: Insight[];
   filterOptions: FilterOptions;
   totalMatched: number;
@@ -97,7 +83,6 @@ export interface FilterOptions {
   clients: string[];
   projects: string[];
   users: string[];
-  reasons: string[];
   stages: string[];
   statuses: string[];
 }
