@@ -1,4 +1,8 @@
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
+
+// All timestamps are stored in UTC and displayed in IST (Asia/Kolkata),
+// pinned explicitly so every viewer sees IST regardless of their browser zone.
+export const DISPLAY_TZ = "Asia/Kolkata";
 
 export function fmtNum(n: number | null | undefined): string {
   if (n == null) return "—";
@@ -10,29 +14,39 @@ export function fmtPct(n: number | null | undefined, digits = 1): string {
   return `${n.toFixed(digits)}%`;
 }
 
-export function fmtDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
+const dateTimeFmt = new Intl.DateTimeFormat("en-US", {
+  timeZone: DISPLAY_TZ, month: "short", day: "numeric", year: "numeric",
+  hour: "2-digit", minute: "2-digit", hour12: false,
+});
+const dateFmt = new Intl.DateTimeFormat("en-US", {
+  timeZone: DISPLAY_TZ, month: "short", day: "numeric", year: "numeric",
+});
+const bucketFmt = new Intl.DateTimeFormat("en-US", { timeZone: DISPLAY_TZ, month: "short", day: "numeric" });
+
+function valid(iso: string | null | undefined): Date | null {
+  if (!iso) return null;
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
-  return format(d, "MMM d, yyyy HH:mm");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export function fmtDateTime(iso: string | null | undefined): string {
+  const d = valid(iso);
+  return d ? dateTimeFmt.format(d) : "—";
 }
 
 export function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
-  return format(d, "MMM d, yyyy");
+  const d = valid(iso);
+  return d ? dateFmt.format(d) : "—";
 }
 
 export function fmtRelative(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
-  return formatDistanceToNowStrict(d, { addSuffix: true });
+  const d = valid(iso);
+  return d ? formatDistanceToNowStrict(d, { addSuffix: true }) : "—";
 }
 
 export function fmtBucket(iso: string, _granularity: "daily" | "weekly"): string {
-  return format(new Date(iso), "MMM d");
+  const d = valid(iso);
+  return d ? bucketFmt.format(d) : "—";
 }
 
 export function initials(s: string | null | undefined): string {

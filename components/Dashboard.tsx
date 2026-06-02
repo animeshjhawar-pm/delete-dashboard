@@ -84,7 +84,7 @@ export function Dashboard() {
         <InsightsPanel insights={data?.insights} loading={loading && !data} />
 
         <footer className="py-6 text-center text-xs text-muted-2">
-          Cluster Deletion Audit Dashboard · {data?.source === "demo" ? "Demo dataset" : "Live data"} · Gushwork
+          Cluster Deletion Audit Dashboard · {data?.source === "demo" ? "Demo dataset" : "Live data"} · all times in IST · Gushwork
           {data?.version && <> · build <span className="font-mono">{data.version}</span></>}
         </footer>
       </main>

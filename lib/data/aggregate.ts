@@ -85,13 +85,18 @@ export function autoGranularity(fromISO: string, toISO: string): Granularity {
   return span <= 21 * DAY ? "daily" : "weekly";
 }
 
+// IST (UTC+5:30, no DST) day/week boundaries, computed via a fixed offset so
+// they're correct regardless of the server's timezone.
+const IST_OFFSET = 5.5 * 3600000;
+function istDayStart(t: number): number {
+  return Math.floor((t + IST_OFFSET) / DAY) * DAY - IST_OFFSET;
+}
 function bucketStart(t: number, g: Granularity): number {
-  const d = new Date(t);
-  if (g === "daily") { d.setHours(0, 0, 0, 0); return d.getTime(); }
-  // weekly -> Monday
-  d.setHours(0, 0, 0, 0);
-  const day = (d.getDay() + 6) % 7;
-  return d.getTime() - day * DAY;
+  const dayStart = istDayStart(t);
+  if (g === "daily") return dayStart;
+  // weekly -> IST Monday
+  const dow = (new Date(t + IST_OFFSET).getUTCDay() + 6) % 7; // Monday = 0
+  return dayStart - dow * DAY;
 }
 
 export function trend(records: DeletionRecord[], fromISO: string, toISO: string, g: Granularity): TimePoint[] {

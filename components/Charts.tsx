@@ -25,14 +25,16 @@ function TooltipBox({ title, rows }: { title?: string; rows: { label: string; va
   );
 }
 
-// Re-bucket daily points into ISO weeks (Monday-anchored) on the client.
+// Re-bucket daily points into IST weeks (Monday-anchored) on the client.
 function toWeekly(points: TimePoint[]): TimePoint[] {
   const DAY = 86400000;
+  const IST = 5.5 * 3600000;
   const map = new Map<number, number>();
   for (const p of points) {
-    const d = new Date(p.bucket);
-    d.setHours(0, 0, 0, 0);
-    const monday = d.getTime() - ((d.getDay() + 6) % 7) * DAY;
+    const t = new Date(p.bucket).getTime();
+    const dayStart = Math.floor((t + IST) / DAY) * DAY - IST;
+    const dow = (new Date(t + IST).getUTCDay() + 6) % 7; // Monday = 0
+    const monday = dayStart - dow * DAY;
     map.set(monday, (map.get(monday) ?? 0) + p.count);
   }
   return Array.from(map.entries())
