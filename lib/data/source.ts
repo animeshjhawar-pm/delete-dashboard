@@ -17,9 +17,13 @@ const WINDOW_TTL_MS = Number(process.env.CACHE_TTL_MS || 20000);
 async function loadWindowUncached(fromISO: string, toISO: string): Promise<SourceResult> {
   if (process.env.DATABASE_URL) {
     try {
-      const records = await fetchDeletions(fromISO, toISO);
+      // Independent queries — run them on separate pool connections in parallel
+      // so the window costs one round-trip, not two.
+      const [records, createdInWindow] = await Promise.all([
+        fetchDeletions(fromISO, toISO),
+        countCreated(fromISO, toISO),
+      ]);
       if (records) {
-        const createdInWindow = await countCreated(fromISO, toISO);
         return { records, createdInWindow, source: "database" };
       }
     } catch (e) {

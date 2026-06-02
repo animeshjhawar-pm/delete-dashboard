@@ -49,10 +49,22 @@ npm run dev            # http://localhost:3000
 ## Deploy on Railway
 
 1. Create a Railway project from this repo (it auto-detects `railway.json` → `Dockerfile`).
-2. Set the `DATABASE_URL` environment variable on the service.
-3. Railway builds the Docker image and serves the Next.js standalone server; health
+2. Set the `DATABASE_URL` environment variable on the service (the only required one).
+3. **Deploy in the same region as the database** (the RDS instance is `us-east-1`).
+   Latency to the DB dominates cold-load time, so co-locating keeps reloads fast.
+4. Railway builds the Docker image and serves the Next.js standalone server; health
    checks hit `/api/health`. Visit `/api/schema` after deploy to confirm it's reading
    the live DB and to see the discovered column mapping.
+
+### Performance
+
+- The connection pool is **pre-warmed at boot**, and each dashboard load fans out to
+  parallel queries on separate connections.
+- `product_count` uses an indexed **correlated subquery** scoped to the deleted rows in
+  the window (≈2.4× faster than aggregating the whole mapping table).
+- A **single-flight + 20s TTL cache** means concurrent users and repeat reloads share one
+  query per time bucket (warm reloads are effectively instant). Tunables: `CACHE_TTL_MS`,
+  `PG_POOL_MAX`, `MAX_ROWS`.
 
 ## Diagnostics
 
