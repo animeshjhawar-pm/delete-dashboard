@@ -54,6 +54,7 @@ export function Dashboard() {
             exportHref={exportHref}
             onSelect={setSelected}
             selectedId={selected?.cluster_id}
+            stages={data?.filterOptions.stages}
           />
         </section>
 

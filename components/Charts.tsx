@@ -4,7 +4,7 @@ import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { Card, SectionTitle, EmptyState, CHART_COLORS, categoricalColor, ProjectBadge, UserChip } from "./ui";
+import { Card, SectionTitle, EmptyState, CHART_COLORS, categoricalColor, lifecycleColor, ProjectBadge, UserChip } from "./ui";
 import { CountSlice, TimePoint, Granularity } from "@/lib/types";
 import { fmtBucket, fmtNum } from "@/lib/format";
 import { useFilters } from "@/lib/client/useFilters";
@@ -102,7 +102,7 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={data} dataKey="count" nameKey="key" innerRadius={66} outerRadius={94} paddingAngle={2} stroke="none">
-                  {data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  {data.map((d, i) => <Cell key={i} fill={lifecycleColor(d.key)} />)}
                 </Pie>
                 <Tooltip content={({ active, payload }) =>
                   active && payload?.length ? (
@@ -119,9 +119,9 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
         )}
       </div>
       <div className="mt-3 space-y-1.5">
-        {data.slice(0, 5).map((d, i) => (
+        {data.slice(0, 5).map((d) => (
           <div key={d.key} className="flex items-center gap-2 text-xs">
-            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: lifecycleColor(d.key) }} />
             <span className="truncate text-muted">{d.key}</span>
             <span className="ml-auto font-medium text-foreground tnum">{fmtNum(d.count)}</span>
             <span className="w-10 text-right text-muted-2 tnum">{d.pct}%</span>

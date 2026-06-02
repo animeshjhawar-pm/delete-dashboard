@@ -13,7 +13,15 @@ export async function GET(req: NextRequest) {
   const filters = parseFilters(sp);
 
   const { records, source } = await loadWindow(range.from, range.to);
-  const filtered = applyFilters(records, filters);
+  let filtered = applyFilters(records, filters);
+
+  // Local-to-this-tab lifecycle filter (independent of the global filters).
+  const lifecycle = sp.get("lifecycle");
+  if (lifecycle) {
+    const set = new Set(lifecycle.split(",").map((s) => s.trim()).filter(Boolean));
+    if (set.size) filtered = filtered.filter((r) => set.has(r.workflow_stage));
+  }
+
   const events = groupEvents(filtered); // already newest-first
 
   const total = events.length;

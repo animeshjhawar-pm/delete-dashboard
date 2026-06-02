@@ -198,6 +198,39 @@ export const CHART_COLORS = [
   "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)",
 ];
 
+// Stable color per lifecycle status, so pills / donut / chips all agree.
+const LIFECYCLE_COLORS: Record<string, string> = {
+  "Yet to be Generated": "var(--chart-5)", // blue
+  "Generated": "var(--chart-4)", // turquoise
+  "Unpublished & Deleted": "var(--chart-2)", // red
+  "No Products Tagged": "var(--chart-6)", // gold/amber
+  "Published & Deleted": "var(--chart-1)", // yellow
+};
+export function lifecycleColor(status: string): string {
+  return LIFECYCLE_COLORS[status] ?? "var(--chart-8)";
+}
+
+export function StatusPill({
+  status, count, onClick, dimmed,
+}: { status: string; count?: number; onClick?: () => void; dimmed?: boolean }) {
+  const c = lifecycleColor(status);
+  const Tag = onClick ? "button" : "span";
+  return (
+    <Tag
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-opacity",
+        onClick && "cursor-pointer hover:opacity-90 focus-ring",
+        dimmed && "opacity-35 grayscale",
+      )}
+      style={{ background: `color-mix(in srgb, ${c} 16%, transparent)`, color: c }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: c }} />
+      {status}{count != null && <span className="tnum opacity-70">×{count}</span>}
+    </Tag>
+  );
+}
+
 // Distinct color per category for lists that can grow unbounded (users,
 // clients). Golden-angle hue rotation guarantees no repetition no matter how
 // many items appear; saturation/lightness chosen to read on both themes.

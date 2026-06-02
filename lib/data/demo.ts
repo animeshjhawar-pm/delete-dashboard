@@ -55,8 +55,23 @@ function buildUniverse(now: number): UniverseRow[] {
   const rows: UniverseRow[] = [];
   const TOTAL = 4200;
 
+  // Pre-seed bulk deletion "batches" — many clusters removed at one instant by
+  // one user — so the grouped Recent Deletions view has multi-cluster events.
+  // Like prod, most deletions belong to a batch; times bias toward recent
+  // (rng*rng) so the newest events are visibly multi-cluster.
+  const HOUR = 3600000;
+  const BATCHES = Array.from({ length: 28 }, (_, k) => ({
+    // First few batches sit in the last ~2 days so the newest events are
+    // visibly multi-cluster; the rest spread (biased recent) across the window.
+    time: k < 5
+      ? now - Math.floor((k * 9 + 1 + rng() * 5) * HOUR)
+      : now - Math.floor(rng() * rng() * 88 * DAY) - Math.floor(rng() * 6 * HOUR),
+    user: USERS[Math.floor(rng() * USERS.length)],
+    project: projects[Math.floor(rng() * projects.length)],
+  }));
+
   for (let i = 0; i < TOTAL; i++) {
-    const proj = projects[Math.floor(rng() * projects.length)];
+    let proj = projects[Math.floor(rng() * projects.length)];
     const createdDaysAgo = Math.floor(rng() * 120) + 1; // 1..120 days ago
     const created = now - createdDaysAgo * DAY - Math.floor(rng() * DAY);
 
@@ -73,6 +88,19 @@ function buildUniverse(now: number): UniverseRow[] {
       if (d > now) d = now - Math.floor(rng() * DAY);
       if (d < created) d = created + Math.floor(rng() * DAY);
       deleted = d;
+    }
+
+    // Most deletions snap to a shared batch (same instant, user & project),
+    // mirroring prod where bulk removals dominate.
+    let delUser = deleted ? USERS[Math.floor(rng() * USERS.length)] : null;
+    if (deleted) {
+      const cands = BATCHES.filter((b) => b.time >= created + DAY && b.time <= now);
+      if (cands.length && rng() < 0.9) {
+        const b = cands[Math.floor(rng() * cands.length)];
+        deleted = b.time;
+        delUser = b.user;
+        proj = b.project;
+      }
     }
 
     let status = STATUSES[Math.floor(rng() * STATUSES.length)];
@@ -104,7 +132,7 @@ function buildUniverse(now: number): UniverseRow[] {
       created_at: new Date(created).toISOString(),
       updated_at: new Date(updated).toISOString(),
       deleted_at: deleted ? new Date(deleted).toISOString() : null,
-      deleted_by: deleted ? USERS[Math.floor(rng() * USERS.length)] : null,
+      deleted_by: delUser,
       page_status: status,
       product_count: pc,
       // Projects are the client accounts in this schema, so they mirror.
