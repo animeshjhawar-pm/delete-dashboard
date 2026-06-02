@@ -23,10 +23,13 @@ export function getPool(): Pool | null {
     pool = new Pool({
       connectionString: url,
       ssl: sslConfig(url),
-      max: 5,
+      // Sized for concurrent dashboard users; the TTL/single-flight cache keeps
+      // actual simultaneous queries well below this in practice.
+      max: Number(process.env.PG_POOL_MAX || 10),
       connectionTimeoutMillis: 10000,
       idleTimeoutMillis: 30000,
       statement_timeout: 25000,
+      keepAlive: true,
     });
     pool.on("error", (e) => console.error("[pg] idle client error", e.message));
   }
