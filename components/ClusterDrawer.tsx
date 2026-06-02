@@ -100,7 +100,7 @@ function EventDetail({
       <div className="flex-1 space-y-4 overflow-y-auto p-5">
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="rounded-lg border border-[var(--border)] bg-surface-2 p-3">
-            <div className="text-muted-2">Deleted by</div>
+            <div className="text-muted-2">Last modified by</div>
             <div className="mt-1 text-foreground"><UserChip user={event.deleted_by} /></div>
           </div>
           <div className="rounded-lg border border-[var(--border)] bg-surface-2 p-3">
@@ -220,7 +220,7 @@ function ClusterDetail({
         </Section>
 
         <Section icon={<Trash2 size={13} />} title="Deletion Metadata">
-          <Row label="Deleted By"><UserChip user={r.deleted_by} /></Row>
+          <Row label="Last Modified By"><UserChip user={r.deleted_by} /></Row>
           <Row label="Page Type"><PageTypeChip type={r.page_type} /></Row>
         </Section>
       </div>

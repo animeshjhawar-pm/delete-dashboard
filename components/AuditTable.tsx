@@ -76,7 +76,7 @@ export function AuditTable({
         <SectionTitle
           title="Recent Deletions"
           subtitle={`${fmtNum(totalClusters)} clusters in ${fmtNum(total)} deletion events · newest first`}
-          info="Deletions grouped by event — clusters removed together by the same user are one row, broken down by lifecycle status. Reflects the global filters; the search box narrows within them. Click an event to open it; multi-cluster events list each cluster as a card to drill into."
+          info="Deletions grouped by event — clusters removed at the same time (and same last editor) are one row, broken down by lifecycle status. Note: the deletion actor isn't recorded in the data, so 'Last Modified By' is the last person who edited the cluster, not necessarily who deleted it. Click an event to open it."
         />
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -99,7 +99,7 @@ export function AuditTable({
           <thead>
             <tr className="border-y border-[var(--border)] bg-surface-2/50 text-[11px] font-semibold uppercase tracking-wide text-muted-2">
               <th className="whitespace-nowrap px-4 py-2.5 text-left">Deleted At</th>
-              <th className="whitespace-nowrap px-4 py-2.5 text-left">Deleted By</th>
+              <th className="whitespace-nowrap px-4 py-2.5 text-left">Last Modified By</th>
               <th className="whitespace-nowrap px-4 py-2.5 text-left">Project</th>
               <th className="whitespace-nowrap px-4 py-2.5 text-left">Clusters</th>
               <th className="whitespace-nowrap px-4 py-2.5 text-left">Lifecycle Status</th>

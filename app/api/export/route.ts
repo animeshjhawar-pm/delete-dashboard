@@ -13,7 +13,7 @@ const COLUMNS: { key: keyof DeletionRecord; label: string }[] = [
   { key: "cluster_name", label: "Cluster Name" },
   { key: "client", label: "Client" },
   { key: "project", label: "Project" },
-  { key: "deleted_by", label: "Deleted By" },
+  { key: "deleted_by", label: "Last Modified By" },
   { key: "workflow_stage", label: "Lifecycle Status" },
   { key: "page_status", label: "Page Status" },
   { key: "product_count", label: "Product Count" },

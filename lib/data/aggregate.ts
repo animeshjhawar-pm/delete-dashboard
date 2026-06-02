@@ -182,12 +182,12 @@ export function insights(
     });
   }
 
-  // Top user
+  // Top last-editor of deleted clusters (u_by is the last editor, not the deleter)
   const users = byUser(filtered, 1);
   if (users[0] && users[0].key !== "Unknown") {
     out.push({
       id: "user", kind: "user", severity: "info",
-      title: `${users[0].key} performed the most deletions (${users[0].count}) this period.`,
+      title: `${users[0].key} last edited the most deleted clusters (${users[0].count}) this period.`,
     });
   }
 

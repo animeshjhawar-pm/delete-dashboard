@@ -157,7 +157,7 @@ export function HBars({
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
     <Card className={cn("p-5 col-span-12 lg:col-span-6 animate-in", colSpan)}>
-      <SectionTitle title={title} subtitle={subtitle} info={`Top ${kind === "user" ? "users who performed deletions" : "projects by deletion count"}, within the global time range and filters at the top. Scrolls if there are many.`} />
+      <SectionTitle title={title} subtitle={subtitle} info={kind === "user" ? "Top users by number of deleted clusters they LAST EDITED. The deletion actor isn't recorded in the data, so this is the last editor, not necessarily the deleter. Within the global filters." : "Top projects by deletion count, within the global time range and filters at the top. Scrolls if there are many."} />
       {loading ? (
         <EmptyState message="Loading…" />
       ) : data.length === 0 ? (
