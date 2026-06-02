@@ -14,7 +14,9 @@ export function useDashboard(queryString: string, refreshKey: number) {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
-    fetch(`/api/dashboard?${queryString}`, { signal: ctrl.signal, cache: "no-store" })
+    // A manual Refresh (refreshKey > 0) forces a fresh DB read, bypassing the cache.
+    const fresh = refreshKey > 0 ? "&nocache=1" : "";
+    fetch(`/api/dashboard?${queryString}${fresh}`, { signal: ctrl.signal, cache: "no-store" })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();

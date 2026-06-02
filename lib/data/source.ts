@@ -41,7 +41,10 @@ async function loadWindowUncached(fromISO: string, toISO: string, maxRows?: numb
 // Tries the real database first; on any failure (no DATABASE_URL, unreachable,
 // unmappable schema) falls back to the deterministic demo dataset so the
 // dashboard is always functional.
-export async function loadWindow(fromISO: string, toISO: string, maxRows?: number): Promise<SourceResult> {
+export async function loadWindow(fromISO: string, toISO: string, maxRows?: number, bypassCache?: boolean): Promise<SourceResult> {
+  // Manual Refresh bypasses the short TTL cache entirely so it always re-queries
+  // the database (a genuinely fresh pull), not a recently-cached result.
+  if (bypassCache) return loadWindowUncached(fromISO, toISO, maxRows);
   const key = `win:${roundISO(fromISO)}:${roundISO(toISO)}:${maxRows ?? "d"}`;
   return cached(key, WINDOW_TTL_MS, () => loadWindowUncached(fromISO, toISO, maxRows));
 }

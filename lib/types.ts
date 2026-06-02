@@ -89,6 +89,7 @@ export interface DashboardPayload {
   filterOptions: FilterOptions;
   totalMatched: number;
   projectDomains: Record<string, string>; // project name -> root domain (for favicons)
+  version: string; // build/commit identifier, to confirm the deployed version
 }
 
 export interface FilterOptions {

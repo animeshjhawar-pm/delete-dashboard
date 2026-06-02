@@ -75,7 +75,7 @@ export function Dashboard() {
         <section className="grid grid-cols-12 gap-4">
           <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
           <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
-          <HBars title="Deleted Clusters by Last Editor" subtitle="Last person to edit the deleted cluster" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-6" />
+          <HBars title="Deletions by User" subtitle="Who deleted (System = actor not recorded)" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-6" />
           <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} colSpan="lg:col-span-6" />
         </section>
 
@@ -84,6 +84,7 @@ export function Dashboard() {
 
         <footer className="py-6 text-center text-xs text-muted-2">
           Cluster Deletion Audit Dashboard · {data?.source === "demo" ? "Demo dataset" : "Live data"} · Gushwork
+          {data?.version && <> · build <span className="font-mono">{data.version}</span></>}
         </footer>
       </main>
 

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const range = parseRange(sp);
   const filters = parseFilters(sp);
 
-  const { records, source } = await loadWindow(range.from, range.to, parseMaxRows(sp));
+  const { records, source } = await loadWindow(range.from, range.to, parseMaxRows(sp), sp.get("nocache") === "1");
   let filtered = applyFilters(records, filters);
 
   // Local-to-this-tab lifecycle filter (independent of the global filters).

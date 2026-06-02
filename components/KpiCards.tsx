@@ -70,9 +70,9 @@ export function KpiCards({
       />
       <Kpi
         icon={<Users size={16} />}
-        label="Unique Last Editors"
+        label="Unique Deleters"
         value={fmtNum(kpis.uniqueUsers)}
-        sub="distinct users (last edit)"
+        sub="distinct deleters"
       />
       <Kpi
         icon={<FileText size={16} />}

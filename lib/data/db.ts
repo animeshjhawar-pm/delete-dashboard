@@ -242,13 +242,23 @@ function normalizeRow(r: Record<string, unknown>): DeletionRecord {
   const product_count =
     r.product_count == null || r.product_count === "" ? null : Number(r.product_count);
   const project = r.project == null ? null : String(r.project);
+  const uBy = r.deleted_by == null ? null : String(r.deleted_by); // clusters.u_by
+  const updatedISO = toISO(r.updated_at);
+  const deletedISO = toISO(r.deleted_at) ?? new Date(0).toISOString();
+  // u_by is the actual deleter ONLY when the delete itself last-touched the row
+  // (u_at == d_at). Otherwise u_by is just the last editor and the deletion
+  // actor is unrecorded -> attribute to "System". Going forward (post the
+  // upstream fix) deletes set u_at = d_at, so the real deleter shows through.
+  const isDeleter =
+    !!uBy && !!updatedISO &&
+    Math.abs(new Date(updatedISO).getTime() - new Date(deletedISO).getTime()) < 5000;
   const base = {
     cluster_id: r.cluster_id == null ? "" : String(r.cluster_id),
     cluster_name: r.cluster_name == null ? null : String(r.cluster_name),
     created_at: toISO(r.created_at),
-    updated_at: toISO(r.updated_at),
-    deleted_at: toISO(r.deleted_at) ?? new Date(0).toISOString(),
-    deleted_by: r.deleted_by == null ? null : String(r.deleted_by),
+    updated_at: updatedISO,
+    deleted_at: deletedISO,
+    deleted_by: isDeleter ? uBy : "System",
     page_status,
     product_count: product_count != null && isNaN(product_count) ? null : product_count,
     // Projects are the customer accounts in this schema, so client mirrors project.
@@ -258,7 +268,7 @@ function normalizeRow(r: Record<string, unknown>): DeletionRecord {
     topic: r.topic == null ? null : String(r.topic),
     page_type: r.page_type == null ? null : String(r.page_type),
     page_id: r.page_id == null ? null : String(r.page_id),
-    last_modified_by: r.deleted_by == null ? null : String(r.deleted_by),
+    last_modified_by: uBy,
     deletion_notes: null, // no dedicated notes column in this schema
     last_published_at: toISO(r.last_published_at),
     last_unpublished_at: toISO(r.last_unpublished_at),

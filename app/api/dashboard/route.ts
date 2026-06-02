@@ -19,9 +19,10 @@ export async function GET(req: NextRequest) {
   const granularity = parseGranularity(sp) ?? autoGranularity(range.from, range.to);
 
   const maxRows = parseMaxRows(sp);
+  const nocache = sp.get("nocache") === "1";
   const [cur, prev] = await Promise.all([
-    loadWindow(range.from, range.to, maxRows),
-    loadWindow(range.prevFrom, range.prevTo, maxRows),
+    loadWindow(range.from, range.to, maxRows, nocache),
+    loadWindow(range.prevFrom, range.prevTo, maxRows, nocache),
   ]);
 
   // Filter options come from the *unfiltered* window so the user can always
@@ -49,6 +50,7 @@ export async function GET(req: NextRequest) {
     filterOptions,
     totalMatched: filtered.length,
     projectDomains,
+    version: (process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "dev").slice(0, 7),
   };
 
   return NextResponse.json(payload, {

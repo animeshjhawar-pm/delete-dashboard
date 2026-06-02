@@ -33,7 +33,7 @@ export function Filters({
 
   const projSel = getMulti("project"), userSel = getMulti("user"), stageSel = getMulti("stage");
   const projLabel = projSel.length ? "Projects" : "All Projects";
-  const userLabel = userSel.length ? "Last Editors" : "All Last Editors";
+  const userLabel = userSel.length ? "Deleters" : "All Deleters";
   const stageLabel = stageSel.length ? "Lifecycle" : "All Lifecycle Statuses";
 
   return (
