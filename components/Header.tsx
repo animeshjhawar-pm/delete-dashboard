@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { RefreshCw, Moon, Sun, Database, FlaskConical, Radio } from "lucide-react";
 import { Button, Badge } from "./ui";
-import { fmtRelative } from "@/lib/format";
+import { fmtRelative, fmtDateTime } from "@/lib/format";
 
 const LOGO_URL = "https://cdn.gushwork.ai/v2/gush_new_logo.svg";
 
 export function Header({
-  lastUpdated, loading, onRefresh, source,
+  lastUpdated, loading, onRefresh, source, windowFrom,
 }: {
   lastUpdated: Date | null;
   loading: boolean;
   onRefresh: () => void;
   source?: "database" | "demo";
+  windowFrom?: string | null;
 }) {
   const [dark, setDark] = useState(true);
   const [, force] = useState(0);
@@ -54,10 +56,14 @@ export function Header({
               {source === "database" ? "Live DB" : "Demo data"}
             </Badge>
           )}
-          <Badge tone="muted" className="hidden md:inline-flex" >
+          <Link
+            href="/configure"
+            title="Configure the deletion (d_at) window"
+            className="hidden items-center gap-1.5 rounded-md border border-[var(--border)] bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted transition-colors hover:border-[var(--border-strong)] hover:text-foreground md:inline-flex"
+          >
             <Radio size={12} className="text-[var(--success)]" />
-            Monitoring since 2 Jun 2026, 3:00 PM
-          </Badge>
+            Monitoring since {windowFrom ? fmtDateTime(windowFrom) : "—"}
+          </Link>
           <div className="hidden text-right lg:block">
             <div className="text-[11px] text-muted-2">Last refreshed</div>
             <div className="text-xs font-medium text-muted tnum">{lastUpdated ? fmtRelative(lastUpdated.toISOString()) : "—"}</div>

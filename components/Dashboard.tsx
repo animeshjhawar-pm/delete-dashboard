@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { setProjectDomains } from "@/lib/client/domains";
+import { RANGE_PRESETS } from "@/lib/range";
 import { Header } from "./Header";
 import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
@@ -14,8 +15,17 @@ import { useDashboard } from "@/lib/client/useDashboard";
 import { DeletionRecord, DeletionEvent } from "@/lib/types";
 
 export function Dashboard() {
-  const { queryString } = useFilters();
+  const { queryString, params } = useFilters();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Start of the analyzed deletion (d_at) window — shown in the header chip.
+  const windowFrom = useMemo(() => {
+    const range = params.range || "7d";
+    if (range === "custom") return params.from ?? null;
+    const def = RANGE_PRESETS[range];
+    return def ? new Date(Date.now() - def.ms).toISOString() : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.range, params.from, refreshKey]);
   const [selectedRecord, setSelectedRecord] = useState<DeletionRecord | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<DeletionEvent | null>(null);
 
@@ -33,7 +43,7 @@ export function Dashboard() {
     <div className="flex min-h-screen flex-col">
       {/* Real-time activity indicator — filters update in place without a reload */}
       {loading && <div className="topbar"><span /></div>}
-      <Header lastUpdated={lastUpdated} loading={loading} onRefresh={refresh} source={data?.source} />
+      <Header lastUpdated={lastUpdated} loading={loading} onRefresh={refresh} source={data?.source} windowFrom={windowFrom} />
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 pb-5 sm:px-6">
         {/* Global filters stick just below the navbar while scrolling */}

@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Download, X, SlidersHorizontal, SlidersVertical } from "lucide-react";
+import { Download, X, SlidersHorizontal } from "lucide-react";
 import { Button, Badge, ProjectBadge, UserChip } from "./ui";
 import { SingleSelect, MultiSelect } from "./Dropdown";
 import { useFilters } from "@/lib/client/useFilters";
@@ -65,14 +64,6 @@ export function Filters({
             />
           </div>
         )}
-
-        <Link
-          href="/configure"
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 text-xs text-muted transition-colors hover:border-[var(--border-strong)] hover:text-foreground focus-ring"
-          title="Configure the exact d_at window (date + time, all-time)"
-        >
-          <SlidersVertical size={14} /> Configure
-        </Link>
 
         <div className="mx-1 hidden h-6 w-px bg-[var(--border)] sm:block" />
 
