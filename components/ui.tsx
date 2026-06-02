@@ -14,13 +14,30 @@ export function Card({ className, children, ...props }: React.HTMLAttributes<HTM
   );
 }
 
+export function InfoDot({ text }: { text: string }) {
+  return (
+    <span
+      className="inline-grid h-4 w-4 cursor-help place-items-center rounded-full text-muted-2 hover:text-foreground"
+      title={text}
+      aria-label={text}
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
 export function SectionTitle({
-  title, subtitle, right,
-}: { title: string; subtitle?: string; right?: React.ReactNode }) {
+  title, subtitle, right, info,
+}: { title: string; subtitle?: string; right?: React.ReactNode; info?: string }) {
   return (
     <div className="flex items-start justify-between gap-3 mb-4">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+          {title}
+          {info && <InfoDot text={info} />}
+        </h3>
         {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
       </div>
       {right}

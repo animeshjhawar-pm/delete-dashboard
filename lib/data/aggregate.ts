@@ -62,8 +62,8 @@ export function byUser(r: DeletionRecord[], limit = 12) { return slices(r, (x) =
 export function byClient(r: DeletionRecord[], limit = 12) { return slices(r, (x) => x.client, limit); }
 
 export function autoGranularity(fromISO: string, toISO: string): Granularity {
+  // Only Daily / Weekly are exposed in the UI.
   const span = new Date(toISO).getTime() - new Date(fromISO).getTime();
-  if (span <= 2 * DAY) return "hourly";
   if (span <= 21 * DAY) return "daily";
   return "weekly";
 }

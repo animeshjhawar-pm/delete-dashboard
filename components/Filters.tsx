@@ -32,7 +32,7 @@ export function Filters({
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="flex items-center gap-2 text-xs font-medium text-muted">
           <SlidersHorizontal size={14} />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden sm:inline">Global Filters</span>
         </div>
 
         <Select

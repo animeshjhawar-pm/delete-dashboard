@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     byUser: byUser(filtered),
     byClient: byClient(filtered),
     heatmap: heatmap(filtered),
-    recent: recent(filtered),
+    recent: recent(filtered, 12),
     insights: insights(filtered, prevFiltered, range.label),
     filterOptions,
     totalMatched: filtered.length,

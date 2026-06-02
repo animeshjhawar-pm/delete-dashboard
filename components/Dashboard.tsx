@@ -5,7 +5,7 @@ import { setProjectDomains } from "@/lib/client/domains";
 import { Header } from "./Header";
 import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
-import { TrendChart, StageDonut, ReasonBar, HBars, Heatmap } from "./Charts";
+import { TrendChart, StageDonut, ReasonBar, HBars } from "./Charts";
 import { InsightsPanel } from "./Insights";
 import { RecentFeed } from "./RecentFeed";
 import { AuditTable } from "./AuditTable";
@@ -42,7 +42,12 @@ export function Dashboard() {
           </div>
         )}
 
-        <KpiCards kpis={data?.kpis} loading={loading && !data} />
+        <KpiCards kpis={data?.kpis} byStage={data?.byStage} loading={loading && !data} />
+
+        {/* Recent deletions — full-width, directly below the KPI cards */}
+        <section className="grid grid-cols-12 gap-4">
+          <RecentFeed records={data?.recent} loading={loading && !data} onSelect={setSelected} />
+        </section>
 
         <section className="grid grid-cols-12 gap-4">
           <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
@@ -50,10 +55,7 @@ export function Dashboard() {
           <ReasonBar data={data?.byReason ?? []} loading={loading && !data} />
           <HBars title="Deletions by User" subtitle="Deletion ownership & activity" data={data?.byUser ?? []} kind="user" loading={loading && !data} />
           <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} />
-          <Heatmap stages={data?.heatmap.stages ?? []} reasons={data?.heatmap.reasons ?? []} cells={data?.heatmap.cells ?? []} loading={loading && !data} />
         </section>
-
-        <InsightsPanel insights={data?.insights} loading={loading && !data} />
 
         <section className="grid grid-cols-12 gap-4">
           <AuditTable
@@ -65,9 +67,8 @@ export function Dashboard() {
           />
         </section>
 
-        <section className="grid grid-cols-12 gap-4">
-          <RecentFeed records={data?.recent} loading={loading && !data} onSelect={setSelected} />
-        </section>
+        {/* Insights & Alerts — last section */}
+        <InsightsPanel insights={data?.insights} loading={loading && !data} />
 
         <footer className="py-6 text-center text-xs text-muted-2">
           Cluster Deletion Audit Dashboard · {data?.source === "demo" ? "Demo dataset" : "Live data"} · Gushwork

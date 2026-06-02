@@ -68,6 +68,7 @@ export function parseFilters(sp: URLSearchParams): Partial<Filters> {
 
 export function parseGranularity(sp: URLSearchParams): Granularity | undefined {
   const g = sp.get("granularity");
-  if (g === "hourly" || g === "daily" || g === "weekly") return g;
+  // Only Daily / Weekly are supported; anything else falls back to auto.
+  if (g === "daily" || g === "weekly") return g;
   return undefined;
 }

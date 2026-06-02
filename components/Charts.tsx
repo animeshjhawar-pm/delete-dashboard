@@ -28,7 +28,8 @@ function TooltipBox({ title, rows }: { title?: string; rows: { label: string; va
 /* ---------------- Trend ---------------- */
 export function TrendChart({ points, granularity, loading }: { points: TimePoint[]; granularity: Granularity; loading?: boolean }) {
   const { get, set } = useFilters();
-  const g = (get("granularity") || granularity) as Granularity;
+  const raw = (get("granularity") || granularity) as Granularity;
+  const g: Granularity = raw === "weekly" ? "weekly" : "daily";
   const total = points.reduce((s, p) => s + p.count, 0);
   const data = points.map((p) => ({ ...p, label: fmtBucket(p.bucket, g) }));
 
@@ -37,9 +38,10 @@ export function TrendChart({ points, granularity, loading }: { points: TimePoint
       <SectionTitle
         title="Deletion Trend Over Time"
         subtitle={`${fmtNum(total)} deletions · spot spikes and unusual activity`}
+        info="Number of clusters deleted over time, bucketed Daily or Weekly. Uses the global time range and filters selected at the top."
         right={
           <div className="flex rounded-lg border border-[var(--border)] p-0.5 text-xs">
-            {(["hourly", "daily", "weekly"] as Granularity[]).map((opt) => (
+            {(["daily", "weekly"] as Granularity[]).map((opt) => (
               <button
                 key={opt}
                 onClick={() => set("granularity", opt)}
@@ -91,7 +93,7 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
   const total = data.reduce((s, d) => s + d.count, 0);
   return (
     <Card className="p-5 col-span-12 lg:col-span-4 animate-in">
-      <SectionTitle title="Deletions by Workflow Stage" subtitle="Where clusters are removed" />
+      <SectionTitle title="Deletions by Workflow Stage" subtitle="Where clusters are removed" info="Share of deletions by the cluster's page status at deletion time (e.g. page not yet generated vs. already generated). Reflects the global time range and filters." />
       <div className="h-[240px] relative">
         {loading || total === 0 ? (
           <EmptyState message={loading ? "Loading…" : "No data"} />
@@ -134,7 +136,7 @@ export function StageDonut({ data, loading }: { data: CountSlice[]; loading?: bo
 export function ReasonBar({ data, loading }: { data: CountSlice[]; loading?: boolean }) {
   return (
     <Card className="p-5 col-span-12 lg:col-span-8 animate-in">
-      <SectionTitle title="Deletions by Reason" subtitle="Root-cause distribution" />
+      <SectionTitle title="Deletions by Reason" subtitle="Root-cause distribution" info="Derived reason for each deletion: 'No Products Tagged' (0 products), or before/after page generation based on page status. Reflects the global time range and filters." />
       <div className="h-[240px]">
         {loading || data.length === 0 ? (
           <EmptyState message={loading ? "Loading…" : "No data"} />
@@ -168,7 +170,7 @@ export function HBars({
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
     <Card className={cn("p-5 col-span-12 animate-in", colSpan)}>
-      <SectionTitle title={title} subtitle={subtitle} />
+      <SectionTitle title={title} subtitle={subtitle} info={`Top ${kind === "user" ? "users who performed deletions" : "projects by deletion count"}, within the global time range and filters.`} />
       {loading ? (
         <EmptyState message="Loading…" />
       ) : data.length === 0 ? (
