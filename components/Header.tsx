@@ -1,27 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, Moon, Sun, Database, FlaskConical } from "lucide-react";
+import { RefreshCw, Moon, Sun, Database, FlaskConical, Radio } from "lucide-react";
 import { Button, Badge } from "./ui";
 import { fmtRelative } from "@/lib/format";
 
-function Logo() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] shadow-sm">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          <path d="m5 6 1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" />
-          <path d="M10 11v6M14 11v6" />
-        </svg>
-      </div>
-      <div className="leading-tight">
-        <div className="text-sm font-semibold text-foreground">Gushwork</div>
-        <div className="text-[11px] text-muted-2">Audit Suite</div>
-      </div>
-    </div>
-  );
-}
+const LOGO_URL = "https://cdn.gushwork.ai/v2/gush_new_logo.svg";
 
 export function Header({
   lastUpdated, loading, onRefresh, source,
@@ -38,7 +22,6 @@ export function Header({
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
-  // Keep the "updated Xs ago" label fresh.
   useEffect(() => {
     const id = setInterval(() => force((n) => n + 1), 15000);
     return () => clearInterval(id);
@@ -52,15 +35,18 @@ export function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_85%,transparent)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6">
-        <Logo />
-
-        <div className="hidden flex-col items-center md:flex">
-          <h1 className="text-base font-semibold tracking-tight text-foreground">Pages Deletion Dashboard</h1>
-          <p className="text-[11px] text-muted-2">Cluster Deletion Audit</p>
+        {/* Left: logo + big, left-aligned title */}
+        <div className="flex min-w-0 items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_URL} alt="Gushwork" width={34} height={34} className="h-8 w-8 shrink-0" />
+          <h1 className="truncate text-lg font-bold tracking-tight text-foreground sm:text-2xl">
+            Pages Deletion Dashboard
+          </h1>
         </div>
 
+        {/* Right: status + actions */}
         <div className="flex items-center gap-2.5">
           {source && (
             <Badge tone={source === "database" ? "success" : "warning"} className="hidden sm:inline-flex">
@@ -68,7 +54,11 @@ export function Header({
               {source === "database" ? "Live DB" : "Demo data"}
             </Badge>
           )}
-          <div className="hidden text-right sm:block">
+          <Badge tone="muted" className="hidden md:inline-flex" >
+            <Radio size={12} className="text-[var(--success)]" />
+            Monitoring since 2 Jun 2026, 3:00 PM
+          </Badge>
+          <div className="hidden text-right lg:block">
             <div className="text-[11px] text-muted-2">Last refreshed</div>
             <div className="text-xs font-medium text-muted tnum">{lastUpdated ? fmtRelative(lastUpdated.toISOString()) : "—"}</div>
           </div>

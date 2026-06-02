@@ -58,8 +58,8 @@ function slices(records: DeletionRecord[], key: (r: DeletionRecord) => string | 
 
 export function byReason(r: DeletionRecord[]) { return slices(r, (x) => x.deletion_reason); }
 export function byStage(r: DeletionRecord[]) { return slices(r, (x) => x.workflow_stage); }
-export function byUser(r: DeletionRecord[], limit = 12) { return slices(r, (x) => x.deleted_by, limit); }
-export function byClient(r: DeletionRecord[], limit = 12) { return slices(r, (x) => x.client, limit); }
+export function byUser(r: DeletionRecord[], limit = 30) { return slices(r, (x) => x.deleted_by, limit); }
+export function byClient(r: DeletionRecord[], limit = 30) { return slices(r, (x) => x.client, limit); }
 
 export function autoGranularity(fromISO: string, toISO: string): Granularity {
   // Only Daily / Weekly are exposed in the UI.

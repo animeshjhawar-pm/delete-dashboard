@@ -187,3 +187,11 @@ export const CHART_COLORS = [
   "var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)",
   "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)",
 ];
+
+// Distinct color per category for lists that can grow unbounded (users,
+// clients). Golden-angle hue rotation guarantees no repetition no matter how
+// many items appear; saturation/lightness chosen to read on both themes.
+export function categoricalColor(i: number): string {
+  const hue = (i * 137.508 + 24) % 360;
+  return `hsl(${hue.toFixed(1)} 62% 55%)`;
+}

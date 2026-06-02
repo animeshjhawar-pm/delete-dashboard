@@ -4,7 +4,7 @@ import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell, BarChart, Bar, LabelList,
 } from "recharts";
-import { Card, SectionTitle, EmptyState, CHART_COLORS, ProjectBadge, UserChip } from "./ui";
+import { Card, SectionTitle, EmptyState, CHART_COLORS, categoricalColor, ProjectBadge, UserChip } from "./ui";
 import { CountSlice, TimePoint, Granularity, HeatCell } from "@/lib/types";
 import { fmtBucket, fmtNum } from "@/lib/format";
 import { useFilters } from "@/lib/client/useFilters";
@@ -176,14 +176,14 @@ export function HBars({
       ) : data.length === 0 ? (
         <EmptyState message="No data" />
       ) : (
-        <div className="space-y-2.5">
+        <div className="max-h-[320px] space-y-2.5 overflow-y-auto pr-1 -mr-1">
           {data.map((d, i) => (
             <div key={d.key} className="flex items-center gap-3">
               <div className="w-[38%] min-w-0 text-xs">
                 {kind === "client" ? <ProjectBadge project={d.key} /> : <UserChip user={d.key} />}
               </div>
               <div className="relative h-6 flex-1 overflow-hidden rounded-md bg-surface-2">
-                <div className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${(d.count / max) * 100}%`, background: CHART_COLORS[i % CHART_COLORS.length], opacity: 0.85 }} />
+                <div className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${(d.count / max) * 100}%`, background: categoricalColor(i), opacity: 0.9 }} />
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-foreground tnum">{fmtNum(d.count)}</span>
               </div>
             </div>

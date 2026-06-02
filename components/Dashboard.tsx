@@ -33,8 +33,11 @@ export function Dashboard() {
     <div className="flex min-h-screen flex-col">
       <Header lastUpdated={lastUpdated} loading={loading} onRefresh={refresh} source={data?.source} />
 
-      <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 py-5 sm:px-6">
-        <Filters options={data?.filterOptions} exportHref={exportHref} totalMatched={data?.totalMatched} />
+      <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 pb-5 sm:px-6">
+        {/* Global filters stick just below the navbar while scrolling */}
+        <div className="sticky top-16 z-20 -mx-4 bg-[color-mix(in_srgb,var(--background)_90%,transparent)] px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+          <Filters options={data?.filterOptions} exportHref={exportHref} totalMatched={data?.totalMatched} />
+        </div>
 
         {error && (
           <div className="card border-[var(--critical)] bg-[color-mix(in_srgb,var(--critical)_8%,transparent)] p-3 text-sm text-[var(--critical)]">
