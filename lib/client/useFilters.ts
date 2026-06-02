@@ -77,7 +77,7 @@ export function useFilters() {
   );
 
   const reset = useCallback(() => {
-    router.replace(`${pathname}?range=${params.range || "7d"}`, { scroll: false });
+    router.replace(`${pathname}?range=${params.range || "since"}`, { scroll: false });
   }, [router, pathname, params.range]);
 
   return { params, get, set, setMany, getMulti, setMulti, toggleMulti, queryString, activeCount, reset };

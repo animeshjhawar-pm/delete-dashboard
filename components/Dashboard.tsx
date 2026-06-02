@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { setProjectDomains } from "@/lib/client/domains";
-import { RANGE_PRESETS } from "@/lib/range";
+import { RANGE_PRESETS, MONITORING_SINCE } from "@/lib/range";
 import { Header } from "./Header";
 import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
@@ -20,7 +20,8 @@ export function Dashboard() {
 
   // Start of the analyzed deletion (d_at) window — shown in the header chip.
   const windowFrom = useMemo(() => {
-    const range = params.range || "7d";
+    const range = params.range || "since";
+    if (range === "since") return MONITORING_SINCE;
     if (range === "custom") return params.from ?? null;
     const def = RANGE_PRESETS[range];
     return def ? new Date(Date.now() - def.ms).toISOString() : null;

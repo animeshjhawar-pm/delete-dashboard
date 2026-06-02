@@ -2,6 +2,11 @@ import { Filters, Granularity } from "./types";
 
 const DAY = 86400000;
 
+// The default "monitoring since" anchor — anyone landing fresh sees deletions
+// from this instant up to now. Overridable via env without a code change.
+// (IST 17:30 on 2 Jun 2026 == 12:00 UTC.)
+export const MONITORING_SINCE = process.env.NEXT_PUBLIC_MONITORING_SINCE || "2026-06-02T17:30:00+05:30";
+
 export const RANGE_PRESETS: Record<string, { label: string; ms: number }> = {
   "24h": { label: "Last 24 Hours", ms: DAY },
   "7d": { label: "Last 7 Days", ms: 7 * DAY },
@@ -20,8 +25,22 @@ export interface ParsedRange {
 }
 
 export function parseRange(sp: URLSearchParams): ParsedRange {
-  const preset = sp.get("range") || "7d";
+  const preset = sp.get("range") || "since";
   const now = Date.now();
+  // Default landing window: from the monitoring-since anchor up to now.
+  // (Presets below stay relative to "now", so they can reach before this date.)
+  if (preset === "since") {
+    const from = new Date(MONITORING_SINCE).getTime();
+    const span = Math.max(now - from, DAY);
+    return {
+      from: new Date(from).toISOString(),
+      to: new Date(now).toISOString(),
+      preset: "since",
+      label: "monitoring window",
+      prevFrom: new Date(from - span).toISOString(),
+      prevTo: new Date(from).toISOString(),
+    };
+  }
   if (preset === "custom") {
     const fromStr = sp.get("from");
     const toStr = sp.get("to");

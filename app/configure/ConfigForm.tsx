@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CalendarRange, Check, Database, RotateCcw } from "lucide-react";
+import { MONITORING_SINCE } from "@/lib/range";
 
 const DAY = 86400000;
 
@@ -35,7 +36,7 @@ export function ConfigForm() {
   const router = useRouter();
   const now = useMemo(() => new Date(), []);
 
-  const initFrom = sp.get("from") ?? new Date(now.getTime() - 30 * DAY).toISOString();
+  const initFrom = sp.get("from") ?? MONITORING_SINCE;
   const initTo = sp.get("to") ?? now.toISOString();
 
   const [from, setFrom] = useState(isoToLocal(initFrom));
@@ -144,10 +145,10 @@ export function ConfigForm() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => router.push("/?range=7d")}
+              onClick={() => router.push("/?range=since")}
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-foreground focus-ring"
             >
-              <RotateCcw size={14} /> Reset to 7 days
+              <RotateCcw size={14} /> Reset to default window
             </button>
             <button
               onClick={apply}

@@ -5,9 +5,11 @@ import { Button, Badge, ProjectBadge, UserChip } from "./ui";
 import { SingleSelect, MultiSelect } from "./Dropdown";
 import { useFilters } from "@/lib/client/useFilters";
 import { FilterOptions } from "@/lib/types";
-import { RANGE_PRESETS } from "@/lib/range";
+import { RANGE_PRESETS, MONITORING_SINCE } from "@/lib/range";
+import { fmtDateTime } from "@/lib/format";
 
 const RANGE_OPTIONS = [
+  { value: "since", label: `Since ${fmtDateTime(MONITORING_SINCE)}` },
   ...Object.entries(RANGE_PRESETS).map(([value, v]) => ({ value, label: v.label })),
   { value: "custom", label: "Custom Range" },
 ];
@@ -25,7 +27,7 @@ export function Filters({
   options, exportHref, totalMatched,
 }: { options?: FilterOptions; exportHref: string; totalMatched?: number }) {
   const { params, set, getMulti, toggleMulti, setMulti, activeCount, reset } = useFilters();
-  const range = params.range || "7d";
+  const range = params.range || "since";
 
   const projectOpts = (options?.projects ?? []).map((v) => ({ value: v, label: v, render: <ProjectBadge project={v} /> }));
   const userOpts = (options?.users ?? []).map((v) => ({ value: v, label: v, render: <UserChip user={v} /> }));
@@ -45,7 +47,7 @@ export function Filters({
         </div>
 
         {/* Time range — single select */}
-        <SingleSelect value={range} onChange={(v) => set("range", v)} options={RANGE_OPTIONS} width={170} className="w-[150px]" />
+        <SingleSelect value={range} onChange={(v) => set("range", v)} options={RANGE_OPTIONS} width={230} className="w-[200px]" />
 
         {range === "custom" && (
           <div className="flex items-center gap-1.5">
