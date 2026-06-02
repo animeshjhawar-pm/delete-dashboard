@@ -129,14 +129,24 @@ export function insights(
     });
   }
 
-  // No products tagged
+  // Deleted before ever being generated (the page_status NULL cohort)
+  const yetToGen = filtered.filter((r) => r.workflow_stage === LIFECYCLE.YET_TO_GEN).length;
+  if (yetToGen > 0) {
+    const pct = pctOf(yetToGen);
+    out.push({
+      id: "yet-to-gen", kind: "stage",
+      severity: pct >= 60 ? "warning" : "info",
+      title: `${pct.toFixed(0)}% were deleted before ever being generated.`,
+    });
+  }
+
+  // No products tagged (category pages the generator couldn't process) — rare,
+  // so report a count rather than a percentage.
   const noProducts = filtered.filter((r) => r.workflow_stage === LIFECYCLE.NO_PRODUCTS).length;
   if (noProducts > 0) {
-    const pct = pctOf(noProducts);
     out.push({
-      id: "no-products", kind: "stage",
-      severity: pct >= 60 ? "warning" : "info",
-      title: `${pct.toFixed(0)}% were deleted with no products tagged.`,
+      id: "no-products", kind: "stage", severity: "info",
+      title: `${noProducts} category ${noProducts === 1 ? "page was" : "pages were"} deleted while flagged "No products tagged".`,
     });
   }
 

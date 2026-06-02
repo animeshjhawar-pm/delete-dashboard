@@ -13,7 +13,11 @@ export const LIFECYCLE = {
 
 interface LifecycleInput {
   page_status: string | null;
-  product_count: number | null;
+  // True when a PAGE_GEN process recorded the "No products tagged" remark.
+  // This is the system's own signal (shown in the product UI) and only fires
+  // for category pages — services/blogs never tag products. We do NOT infer
+  // this from a raw product count, which would be wrong for blogs/services.
+  no_products_tagged?: boolean;
   last_published_at?: string | null;
 }
 
@@ -28,9 +32,9 @@ export function deriveLifecycle(r: LifecycleInput): string {
 
   if (status === "generated") return LIFECYCLE.GENERATED;
 
-  // Pre-generation (page_status NULL): split out the "no products tagged"
-  // cohort, which is exclusive of plain "yet to be generated".
-  if (!status) return r.product_count === 0 ? LIFECYCLE.NO_PRODUCTS : LIFECYCLE.YET_TO_GEN;
+  // Pre-generation (page_status NULL): a category page that the generator
+  // flagged "No products tagged" is exclusive of plain "yet to be generated".
+  if (!status) return r.no_products_tagged ? LIFECYCLE.NO_PRODUCTS : LIFECYCLE.YET_TO_GEN;
 
   // Any future status renders title-cased rather than being dropped.
   return r.page_status!.replace(/\b\w/g, (c) => c.toUpperCase());

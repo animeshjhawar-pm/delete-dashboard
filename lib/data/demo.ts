@@ -32,6 +32,7 @@ interface UniverseRow {
   deletion_notes: string | null;
   last_published_at: string | null;
   last_unpublished_at: string | null;
+  no_products_tagged: boolean;
 }
 
 const PAGE_TYPES = ["service", "blog", "category"];
@@ -117,6 +118,8 @@ function buildUniverse(now: number): UniverseRow[] {
         deleted && rng() < 0.25 ? "Flagged during routine catalog QA sweep." : null,
       last_published_at: lastPub ? new Date(lastPub).toISOString() : null,
       last_unpublished_at: lastUnpub ? new Date(lastUnpub).toISOString() : null,
+      // Only category pages get a "no products tagged" gen failure.
+      no_products_tagged: !!deleted && status === null && pageType === "category" && rng() < 0.5,
     });
   }
   return rows;

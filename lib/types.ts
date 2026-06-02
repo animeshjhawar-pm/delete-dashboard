@@ -23,6 +23,7 @@ export interface DeletionRecord {
   // Publish lifecycle (from processes history)
   last_published_at?: string | null;
   last_unpublished_at?: string | null;
+  no_products_tagged?: boolean; // PAGE_GEN process flagged "No products tagged"
   // Derived single lifecycle status (see derive.ts)
   workflow_stage: string;
 }

@@ -71,9 +71,13 @@ const PROC = {
   type: process.env.COL_PROC_TYPE || "process_type",
   status: process.env.COL_PROC_STATUS || "process_status",
   completedAt: process.env.COL_PROC_COMPLETED || "completed_at",
+  remarks: process.env.COL_PROC_REMARKS || "remarks",
   publishType: process.env.PROC_PUBLISH_TYPE || "PAGE_PUBLISH",
   unpublishType: process.env.PROC_UNPUBLISH_TYPE || "PAGE_UNPUBLISH",
   doneStatus: process.env.PROC_DONE_STATUS || "COMPLETED",
+  // The generator records this remark (shown in the product UI) when a
+  // category page can't be generated because no products are tagged.
+  noProductsRemark: process.env.PROC_NO_PRODUCTS_REMARK || "No products tagged",
 };
 const C = {
   id: process.env.COL_ID || "id",
@@ -170,7 +174,12 @@ export async function fetchDeletions(fromISO: string, toISO: string): Promise<De
         FROM ${qt(T.processes)} pr
         WHERE pr.${id(PROC.table)} = $6 AND pr.${id(PROC.rowId)} = c.${id(C.id)}
           AND pr.${id(PROC.type)} = $4 AND pr.${id(PROC.status)} = $5
-      )                                  AS last_unpublished_at
+      )                                  AS last_unpublished_at,
+      EXISTS (
+        SELECT 1 FROM ${qt(T.processes)} pr
+        WHERE pr.${id(PROC.table)} = $6 AND pr.${id(PROC.rowId)} = c.${id(C.id)}
+          AND pr.${id(PROC.remarks)} = $7
+      )                                  AS no_products_tagged
     FROM ${qt(T.clusters)} c
     LEFT JOIN ${qt(T.projects)} p ON p.${id(C.id)} = c.${id(C.projectId)}
     WHERE ${c} IS NOT NULL AND ${c} >= $1 AND ${c} <= $2
@@ -179,6 +188,7 @@ export async function fetchDeletions(fromISO: string, toISO: string): Promise<De
 
   const { rows } = await p.query(sql, [
     fromISO, toISO, PROC.publishType, PROC.unpublishType, PROC.doneStatus, T.clusters,
+    PROC.noProductsRemark,
   ]);
   return rows.map(normalizeRow);
 }
@@ -237,6 +247,7 @@ function normalizeRow(r: Record<string, unknown>): DeletionRecord {
     deletion_notes: null, // no dedicated notes column in this schema
     last_published_at: toISO(r.last_published_at),
     last_unpublished_at: toISO(r.last_unpublished_at),
+    no_products_tagged: r.no_products_tagged === true,
   };
   return {
     ...base,
