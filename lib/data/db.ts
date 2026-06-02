@@ -209,6 +209,20 @@ export async function getSchemaMap() {
   return exists ? { table: `${T.schema}.${T.clusters}`, columns: C } : null;
 }
 
+// Connectivity probe surfaced by /api/schema, so deploy issues (security group
+// timeouts, SSL, DNS) are visible instead of silently falling back to demo.
+export async function pingDatabase(): Promise<{ ok: boolean; error?: string; ms: number }> {
+  const p = getPool();
+  if (!p) return { ok: false, error: "DATABASE_URL not set", ms: 0 };
+  const t0 = Date.now();
+  try {
+    await p.query("SELECT 1");
+    return { ok: true, ms: Date.now() - t0 };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message, ms: Date.now() - t0 };
+  }
+}
+
 function toISO(v: unknown): string | null {
   if (v == null) return null;
   if (v instanceof Date) return v.toISOString();

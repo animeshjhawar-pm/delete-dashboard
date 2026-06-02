@@ -1,5 +1,5 @@
 import { DeletionRecord } from "@/lib/types";
-import { fetchDeletions, countCreated, getSchemaMap } from "./db";
+import { fetchDeletions, countCreated, getSchemaMap, pingDatabase } from "./db";
 import { fetchDeletionsDemo, countCreatedDemo } from "./demo";
 import { cached, roundISO } from "./cache";
 
@@ -46,18 +46,36 @@ export async function loadWindow(fromISO: string, toISO: string): Promise<Source
 }
 
 export async function describeSource() {
-  const hasDb = !!process.env.DATABASE_URL;
-  let schema = null;
-  if (hasDb) {
-    try {
-      schema = await getSchemaMap();
-    } catch {
-      schema = null;
+  const url = process.env.DATABASE_URL;
+  const hasDb = !!url;
+
+  // Parse host/port (never the credentials) so the deployer can confirm they
+  // pointed at the right database.
+  let dbHost: string | null = null;
+  let dbPort: string | null = null;
+  try {
+    if (url) {
+      const u = new URL(url.replace(/^postgres(ql)?:\/\//, "http://"));
+      dbHost = u.hostname;
+      dbPort = u.port || "5432";
     }
+  } catch { /* ignore */ }
+
+  let schema = null;
+  let ping: { ok: boolean; error?: string; ms: number } | null = null;
+  if (hasDb) {
+    ping = await pingDatabase();
+    try { schema = await getSchemaMap(); } catch { schema = null; }
   }
+
   return {
     mode: hasDb && schema ? "database" : "demo",
     hasDatabaseUrl: hasDb,
+    dbHost,
+    dbPort,
+    dbReachable: ping ? ping.ok : null,
+    dbError: ping && !ping.ok ? ping.error : null,
+    pingMs: ping ? ping.ms : null,
     schema,
   };
 }
