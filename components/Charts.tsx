@@ -199,7 +199,9 @@ function RankBadge({ rank }: { rank: number }) {
         className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full text-[13px] font-bold tnum"
         style={{ background: medal, color: "#181a20", boxShadow: `0 0 0 3px color-mix(in srgb, ${medal} 28%, transparent)` }}
       >
-        {rank === 1 && <Crown size={11} className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: medal }} />}
+        {rank === 1
+          ? <Crown size={11} className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: medal }} />
+          : <Trophy size={10} className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: medal }} />}
         {rank}
       </span>
     );
