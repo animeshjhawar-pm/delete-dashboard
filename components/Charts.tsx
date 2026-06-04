@@ -4,6 +4,7 @@ import {
   Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
+import { Trophy, Crown } from "lucide-react";
 import { Card, SectionTitle, EmptyState, categoricalColor, lifecycleColor, ProjectBadge, UserChip } from "./ui";
 import { CountSlice, TimePoint, Granularity } from "@/lib/types";
 import { fmtBucket, fmtNum } from "@/lib/format";
@@ -186,3 +187,80 @@ export function HBars({
   );
 }
 
+
+/* ---------------- Deletion Leaderboard (by user) ---------------- */
+const MEDAL: Record<number, string> = { 1: "var(--chart-1)", 2: "#c4ccd6", 3: "#cd7f32" };
+
+function RankBadge({ rank }: { rank: number }) {
+  const medal = MEDAL[rank];
+  if (medal) {
+    return (
+      <span
+        className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full text-[13px] font-bold tnum"
+        style={{ background: medal, color: "#181a20", boxShadow: `0 0 0 3px color-mix(in srgb, ${medal} 28%, transparent)` }}
+      >
+        {rank === 1 && <Crown size={11} className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: medal }} />}
+        {rank}
+      </span>
+    );
+  }
+  return (
+    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-semibold text-muted-2 tnum">
+      {rank}
+    </span>
+  );
+}
+
+export function UserLeaderboard({
+  title, subtitle, data, loading, colSpan = "lg:col-span-6",
+}: { title: string; subtitle: string; data: CountSlice[]; loading?: boolean; colSpan?: string }) {
+  const max = Math.max(1, ...data.map((d) => d.count));
+  return (
+    <Card className={cn("p-5 col-span-12 animate-in", colSpan)}>
+      <SectionTitle
+        title={title}
+        subtitle={subtitle}
+        info="Leaderboard of deleters by number of clusters deleted. The real user shows when the system recorded the deletion (u_at = d_at); older/automated deletes where the actor wasn't captured are grouped as 'System'. Within the global filters."
+        right={<span className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]"><Trophy size={15} /></span>}
+      />
+      {loading ? (
+        <EmptyState message="Loading…" />
+      ) : data.length === 0 ? (
+        <EmptyState message="No data" />
+      ) : (
+        <div className="max-h-[340px] space-y-1.5 overflow-y-auto pr-1 -mr-1">
+          {data.map((d, i) => {
+            const rank = i + 1;
+            const medal = MEDAL[rank];
+            return (
+              <div
+                key={d.key}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border px-2.5 py-2 transition-colors",
+                  rank <= 3 ? "border-[var(--border)] bg-surface-2" : "border-transparent",
+                )}
+              >
+                <RankBadge rank={rank} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                      <UserChip user={d.key} compact />
+                    </span>
+                    <span className="shrink-0 text-sm font-semibold text-foreground tnum">{fmtNum(d.count)}</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${(d.count / max) * 100}%`, background: medal ?? "var(--accent)" }}
+                    />
+                  </div>
+                </div>
+                <span className="w-10 shrink-0 text-right text-[11px] text-muted-2 tnum">{d.pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}

@@ -6,7 +6,7 @@ import { RANGE_PRESETS, MONITORING_SINCE } from "@/lib/range";
 import { Header } from "./Header";
 import { Filters } from "./Filters";
 import { KpiCards } from "./KpiCards";
-import { TrendChart, StageDonut, HBars } from "./Charts";
+import { TrendChart, StageDonut, HBars, UserLeaderboard } from "./Charts";
 import { InsightsPanel } from "./Insights";
 import { AuditTable } from "./AuditTable";
 import { DetailDrawer } from "./ClusterDrawer";
@@ -76,7 +76,7 @@ export function Dashboard() {
         <section className="grid grid-cols-12 gap-4">
           <TrendChart points={data?.trend.points ?? []} granularity={data?.trend.granularity ?? "daily"} loading={loading && !data} />
           <StageDonut data={data?.byStage ?? []} loading={loading && !data} />
-          <HBars title="Deletions by User" subtitle="Who deleted (System = actor not recorded)" data={data?.byUser ?? []} kind="user" loading={loading && !data} colSpan="lg:col-span-6" />
+          <UserLeaderboard title="Deletion Leaderboard" subtitle="Top deleters (System = actor not recorded)" data={data?.byUser ?? []} loading={loading && !data} colSpan="lg:col-span-6" />
           <HBars title="Deletions by Client" subtitle="Abnormal deletion patterns" data={data?.byClient ?? []} kind="client" loading={loading && !data} colSpan="lg:col-span-6" />
         </section>
 
